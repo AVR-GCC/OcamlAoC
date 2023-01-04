@@ -56,10 +56,10 @@ print_string "["; middle lst; print_string "]";;
 
 let split str delimiter =
   let rec splt curstring curarr strarr = match strarr with
-  [] -> curarr@[curstring]
+  [] -> (List.rev curstring)::curarr
   | h::t -> if h = delimiter
-    then splt [] (curarr@[curstring]) t
-    else splt (curstring@[h]) curarr t in
+    then splt [] ((List.rev curstring)::curarr) t
+    else splt (h::curstring) curarr t in
   splt [] [] str;;
 
 let number_strings_array = split (map implode (split (explode test_string) "\n")) "";;
