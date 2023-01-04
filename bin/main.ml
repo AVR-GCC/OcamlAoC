@@ -60,7 +60,7 @@ let split str delimiter =
   | h::t -> if h = delimiter
     then splt [] ((List.rev curstring)::curarr) t
     else splt (h::curstring) curarr t in
-  splt [] [] str;;
+  List.rev (splt [] [] str);;
 
 let number_strings_array = split (map implode (split (explode test_string) "\n")) "";;
 
