@@ -49,10 +49,10 @@ let explode str =
     else expl ((string_of_char str.[index])::curarr) (index + 1) in
   List.rev (expl [] 0);;
 
-let printlist printelem lst = let rec middle = function
+(* let printlist printelem lst = let rec middle = function
 | [] -> ()
 | h::t -> printelem h; if t = [] then () else print_string "; "; middle t in
-print_string "["; middle lst; print_string "]";;
+print_string "["; middle lst; print_string "]";; *)
 
 let split str delimiter =
   let rec splt curstring curarr strarr = match strarr with
@@ -64,9 +64,9 @@ let split str delimiter =
 
 let number_strings_array = split (map implode (split (explode test_string) "\n")) "";;
 
-let () = printlist (printlist print_string) number_strings_array;;
+(* let () = printlist (printlist print_string) number_strings_array;; *)
 
-(* let numbers_array = map (map int_of_string) number_strings_array;;
+let numbers_array = map (map int_of_string) number_strings_array;;
 
 let rec sum arr = match arr with
 [] -> 0
@@ -79,4 +79,4 @@ let rec max_int arr = match arr with
 | h::t -> if h > max_int t then h else max_int t
 | [] -> 0;;
 
-let () = printlist (printlist print_int) print_int (max_int sums_array); *)
+let () = print_int (max_int sums_array);;
