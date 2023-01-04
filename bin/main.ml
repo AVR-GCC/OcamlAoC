@@ -46,8 +46,8 @@ let explode str =
   let rec expl curarr index =
     if index = String.length str
     then curarr
-    else expl (curarr @ [string_of_char str.[index]]) (index + 1) in
-  expl [] 0;;
+    else expl ((string_of_char str.[index])::curarr) (index + 1) in
+  List.rev (expl [] 0);;
 
 let printlist printelem lst = let rec middle = function
 | [] -> ()
