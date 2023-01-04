@@ -31,14 +31,14 @@ let test_string = "22243
 2123
 4825";;
 
-let rec map fn arr = match arr with
+(* let rec map fn arr = match arr with
 [] -> []
-| h::t -> fn h :: map fn t;;
+| h::t -> fn h :: map fn t;; *)
 
-let rec implode chars =
+(* let rec implode chars =
   match chars with
     [] -> ""
-    | h::t -> h ^ (implode t);;
+    | h::t -> h ^ (implode t);; *)
 
 let string_of_char c = String.make 1 c;;
 
@@ -54,17 +54,17 @@ let printlist printelem lst = let rec middle = function
 | h::t -> printelem h; if t = [] then () else print_string "; "; middle t in
 print_string "["; middle lst; print_string "]";;
 
-let split str delimiter =
+(* let split str delimiter =
   let rec splt curstring curarr strarr = match strarr with
   [] -> (List.rev curstring)::curarr
   | h::t -> if h = delimiter
     then splt [] ((List.rev curstring)::curarr) t
     else splt (h::curstring) curarr t in
-  List.rev (splt [] [] str);;
+  List.rev (splt [] [] str);; *)
 
-let number_strings_array = split (map implode (split (explode test_string) "\n")) "";;
+(* let number_strings_array = split (map implode (split (explode test_string) "\n")) "";; *)
 
-let () = printlist (printlist print_string) number_strings_array;;
+let () = printlist print_string (explode test_string);;
 
 (* let numbers_array = map (map int_of_string) number_strings_array;;
 
