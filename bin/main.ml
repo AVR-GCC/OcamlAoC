@@ -52,10 +52,11 @@ let rec map fn arr = match arr with
 [] -> []
 | h::t -> fn h :: map fn t;;
 
-let rec implode chars =
-  match chars with
-    [] -> ""
-    | h::t -> h ^ (implode t);;
+let implode chars =
+  let b = Buffer.create 16 in
+    List.iter (Buffer.add_string b) chars;
+    Buffer.contents b;;
+
 
 let string_of_char c = String.make 1 c;;
 
