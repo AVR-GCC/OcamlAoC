@@ -2258,7 +2258,7 @@ let test_string = "22243
 2123
 4825";;
 
-let rec map fn arr = match arr with
+(* let rec map fn arr = match arr with
 [] -> []
 | h::t -> fn h :: map fn t;;
 
@@ -2307,4 +2307,28 @@ let rec max_int arr = match arr with
 | h::t -> if h > max_int t then h else max_int t
 | [] -> 0;;
 
-let () = print_int (max_int sums_array);;
+let () = print_int (max_int sums_array);; *)
+
+let number_strings_array = test_string |> String.split_on_char '\n';;
+
+let split_list delimiter lst =
+  let rec get_chunk this_chunk remaining_list = match remaining_list with
+  | [] -> (this_chunk, [])
+  | h::t -> if h = delimiter
+    then (this_chunk, t)
+    else get_chunk ((int_of_string h)::this_chunk) t in
+  let rec get_chunks result_so_far remaining_list = match remaining_list with
+  | [] -> result_so_far
+  | _::_ -> let chunk = get_chunk [] remaining_list in
+  match chunk with
+  | (this_chunk, new_remaining_list) -> get_chunks (this_chunk::result_so_far) new_remaining_list in
+  get_chunks [] lst;;
+
+let numbers_array = split_list "" number_strings_array;;
+
+let sum = List.fold_left (+) 0;;
+
+let sums_array = List.map sum numbers_array;;
+let max_number = List.fold_left (fun acc x -> if x > acc then x else acc) 0;;
+
+let () = print_int (max_number sums_array);;
