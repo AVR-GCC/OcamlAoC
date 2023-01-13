@@ -2258,56 +2258,10 @@ let test_string = "22243
 2123
 4825";;
 
-(* let rec map fn arr = match arr with
-[] -> []
-| h::t -> fn h :: map fn t;;
-
-let implode chars =
-  let b = Buffer.create 16 in
-    List.iter (Buffer.add_string b) chars;
-    Buffer.contents b;;
-
-
-let string_of_char c = String.make 1 c;;
-
-let explode str =
-  let rec expl curarr index =
-    if index = String.length str
-    then curarr
-    else expl ((string_of_char str.[index])::curarr) (index + 1) in
-  List.rev (expl [] 0);;
-
-(* let printlist printelem lst = let rec middle = function
+let printlist printelem lst = let rec middle = function
 | [] -> ()
 | h::t -> printelem h; if t = [] then () else print_string "; "; middle t in
-print_string "["; middle lst; print_string "]";; *)
-
-let split str delimiter =
-  let rec splt curstring curarr strarr = match strarr with
-  [] -> (List.rev curstring)::curarr
-  | h::t -> if h = delimiter
-    then splt [] ((List.rev curstring)::curarr) t
-    else splt (h::curstring) curarr t in
-  List.rev (splt [] [] str);;
-
-let number_strings_array = split (map implode (split (explode test_string) "\n")) "";;
-
-(* let () = printlist (printlist print_string) number_strings_array;; *)
-
-let numbers_array = map (map int_of_string) number_strings_array;;
-
-let rec sum arr = match arr with
-[] -> 0
-| h::t -> sum t + h;;
-
-let sums_array = map sum numbers_array;;
-
-let rec max_int arr = match arr with
-[h] -> h
-| h::t -> if h > max_int t then h else max_int t
-| [] -> 0;;
-
-let () = print_int (max_int sums_array);; *)
+print_string "["; middle lst; print_string "]";;
 
 let number_strings_array = test_string |> String.split_on_char '\n';;
 
@@ -2328,7 +2282,38 @@ let numbers_array = split_list "" number_strings_array;;
 
 let sum = List.fold_left (+) 0;;
 
-let sums_array = List.map sum numbers_array;;
-let max_number = List.fold_left (fun acc x -> if x > acc then x else acc) 0;;
+let min lst =
+  let rec minimum cur_index min_and_index remainder = match remainder with
+  | [] -> min_and_index
+  | h::t -> match min_and_index with
+    (min_so_far, _) -> if min_so_far > h
+      then minimum (cur_index + 1) (h, cur_index) t
+      else minimum (cur_index + 1) min_and_index t in
+  minimum 0 (1000000000000, -1) lst;;
 
-let () = print_int (max_number sums_array);;
+let sums_array = List.map sum numbers_array;;
+let max_numbers = List.fold_left (
+  fun acc x -> match acc with
+  | (first_number, second_number, third_number) ->
+    match (min [first_number; second_number; third_number]) with
+    | (min_value, min_index) -> if x > min_value
+      then match min_index with
+      | 0 -> (x, second_number, third_number)
+      | 1 -> (first_number, x, third_number)
+      | 2 -> (first_number, second_number, x)
+      | _ -> (first_number, second_number, third_number)
+      else (first_number, second_number, third_number)
+  ) (0, 0, 0);;
+
+let () = match (max_numbers sums_array) with
+| (number_one, number_two, number_three) ->
+  print_string "\n";
+  printlist print_int sums_array;
+  print_string "\n";
+  print_int number_one;
+  print_string "\n";
+  print_int number_two;
+  print_string "\n";
+  print_int number_three;
+  print_string "\n";
+  print_int (number_one + number_two + number_three);;
