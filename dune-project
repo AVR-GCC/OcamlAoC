@@ -1,26 +1,17 @@
 (lang dune 3.6)
 
-(name helloworld)
+(name aoc)
 
 (generate_opam_files true)
 
 (source
- (github username/reponame))
+ (github AVR-GCC/OcamlAoC))
 
-(authors "Author Name")
-
-(maintainers "Maintainer Name")
+(authors "Bar Yehudai")
 
 (license LICENSE)
 
-(documentation https://url/to/documentation)
-
 (package
- (name helloworld)
- (synopsis "A short synopsis")
- (description "A longer description")
- (depends ocaml dune)
- (tags
-  (topics "to describe" your project)))
-
-; See the complete stanza docs at https://dune.readthedocs.io/en/stable/dune-files.html#dune-project
+ (name aoc)
+ (synopsis "Advent of coding 2022 excercises")
+ (depends ocaml dune))

@@ -1,4 +1,3 @@
 (executable
- (public_name helloworld)
- (name main)
- (libraries helloworld))
+ (public_name aoc)
+ (name main))
