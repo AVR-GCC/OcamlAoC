@@ -2498,9 +2498,9 @@ A Y
 A Y
 A Y
 B Y
-A Y";;
+A Y"
 
-let split_lines str = str |> String.split_on_char '\n';;
+let split_lines str = str |> String.split_on_char '\n'
 
 let lines = split_lines test_string;;
 let line_to_game_wrong line = let tuple_to_result = function 
@@ -2516,7 +2516,7 @@ let line_to_game_wrong line = let tuple_to_result = function
     | 'A' -> 0
     | 'B' -> 6
     | _ -> 3 in
-  tuple_to_result (line.[0], line.[2]);;
+  tuple_to_result (line.[0], line.[2])
 
 let line_to_game line = let tuple_to_result = function 
   | (a, 'X') -> 0 + (match a with
@@ -2531,9 +2531,9 @@ let line_to_game line = let tuple_to_result = function
     | 'A' -> 2
     | 'B' -> 3
     | _ -> 1 in
-  tuple_to_result (line.[0], line.[2]);;
+  tuple_to_result (line.[0], line.[2])
 
 let game_results_wrong = List.map line_to_game_wrong lines;;
-let game_results = List.map line_to_game lines;;
+let game_results = List.map line_to_game lines
 
-let run () =  print_string "\n the wrong result is: "; print_int (sum game_results_wrong); print_string "\n the right result is: "; print_int (sum game_results); print_string "\n";;
+let run () = print_string "\n the wrong result is: "; print_int (sum game_results_wrong); print_string "\n the right result is: "; print_int (sum game_results); print_string "\n";;

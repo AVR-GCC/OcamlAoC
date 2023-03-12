@@ -2256,14 +2256,14 @@ let test_string = "22243
 2663
 3253
 2123
-4825";;
+4825"
 
 let printlist printelem lst = let rec middle = function
 | [] -> ()
 | h::t -> printelem h; if t = [] then () else print_string "; "; middle t in
-print_string "["; middle lst; print_string "]";;
+print_string "["; middle lst; print_string "]"
 
-let number_strings_array = test_string |> String.split_on_char '\n';;
+let number_strings_array = test_string |> String.split_on_char '\n'
 
 let split_list delimiter lst =
   let rec get_chunk this_chunk remaining_list = match remaining_list with
@@ -2276,11 +2276,11 @@ let split_list delimiter lst =
   | _::_ -> let chunk = get_chunk [] remaining_list in
   match chunk with
   | (this_chunk, new_remaining_list) -> get_chunks (this_chunk::result_so_far) new_remaining_list in
-  get_chunks [] lst;;
+  get_chunks [] lst
 
-let numbers_array = split_list "" number_strings_array;;
+let numbers_array = split_list "" number_strings_array
 
-let sum = List.fold_left (+) 0;;
+let sum = List.fold_left (+) 0
 
 let min lst =
   let rec minimum cur_index min_and_index remainder = match remainder with
@@ -2289,7 +2289,7 @@ let min lst =
     (min_so_far, _) -> if min_so_far > h
       then minimum (cur_index + 1) (h, cur_index) t
       else minimum (cur_index + 1) min_and_index t in
-  minimum 0 (1000000000000, -1) lst;;
+  minimum 0 (1000000000000, -1) lst
 
 let sums_array = List.map sum numbers_array;;
 let max_numbers = List.fold_left (
@@ -2303,7 +2303,7 @@ let max_numbers = List.fold_left (
       | 2 -> (first_number, second_number, x)
       | _ -> (first_number, second_number, third_number)
       else (first_number, second_number, third_number)
-  ) (0, 0, 0);;
+  ) (0, 0, 0)
 
 let run () = match (max_numbers sums_array) with
 | (number_one, number_two, number_three) ->
