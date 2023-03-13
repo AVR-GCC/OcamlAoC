@@ -2260,12 +2260,12 @@ print_string "["; middle lst; print_string "]"
 
 let number_strings_array = test_string |> String.split_on_char '\n'
 
-let split_list delimiter lst =
+let split_list manipulate delimiter lst =
   let rec get_chunk this_chunk remaining_list = match remaining_list with
   | [] -> (this_chunk, [])
   | h::t -> if h = delimiter
     then (this_chunk, t)
-    else get_chunk ((int_of_string h)::this_chunk) t in
+    else get_chunk ((manipulate h)::this_chunk) t in
   let rec get_chunks result_so_far remaining_list = match remaining_list with
   | [] -> result_so_far
   | _::_ -> let chunk = get_chunk [] remaining_list in
@@ -2273,7 +2273,7 @@ let split_list delimiter lst =
   | (this_chunk, new_remaining_list) -> get_chunks (this_chunk::result_so_far) new_remaining_list in
   get_chunks [] lst
 
-let numbers_array = split_list "" number_strings_array
+let numbers_array = split_list int_of_string "" number_strings_array
 
 let sum = List.fold_left (+) 0
 
