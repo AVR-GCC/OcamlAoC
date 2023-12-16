@@ -52,7 +52,7 @@ let add_item item dir = match dir with
   | Dir (name, lst) -> (match item with
     | Dir (child_name, child_lst) -> Dir (name, (Dir (child_name, child_lst))::lst)
     | File (child_name, child_size) -> Dir (name, (File (child_name, child_size))::lst)
-    | None -> Dir (name, None::lst))
+    | None -> Dir (name, lst))
   | _ -> dir
 
 let rec find_item name lst = match lst with
@@ -74,8 +74,35 @@ let cd path pwd = match pwd with
     pop_callstack () else (push_callstack pwd; (find_item path lst))
   | _ -> None
 
+let commands = List.tl (String.split_on_char '$' test_string)
 
-let f_file = File ("f", 29116)
+let substring_deltas str start_delta end_delta = let sub_len = String.length str - end_delta - start_delta in String.sub str start_delta sub_len
+
+let line_to_file_tuple line = let splitted = String.split_on_char ' ' line in if line.[0] = 'd'
+  then (List.hd (List.tl splitted), -1)
+  else (
+    List.hd (List.tl splitted),
+    int_of_string (List.hd splitted)
+  )
+
+let ls_lines_to_tuples = List.map line_to_file_tuple
+
+let tuple_table = Hashtbl.create 200
+
+let rec populate_tuple_table cmds = match cmds with
+  | cd_line::ls_line::t -> (match String.split_on_char ' ' cd_line with
+    | _::"cd"::name::_ when not (String.equal name "..\n") ->
+      let splitted = String.split_on_char '\n' (String.trim ls_line) in
+      Hashtbl.add tuple_table (String.trim name) (ls_lines_to_tuples (List.tl splitted));
+      populate_tuple_table t
+    | _ -> populate_tuple_table (ls_line::t))
+  | _ -> ()
+
+let print_tuple tup = match tup with
+  | (name, size) -> Printf.printf "(%s, %i)" name size
+
+let print_ht ht = print_endline ""; Hashtbl.iter (fun x y -> print_endline ""; print_string x; print_string " -> "; Day1.printlist print_tuple y) ht
+(* let f_file = File ("f", 29116)
 let g_file = File ("g", 2557)
 
 let a_dir = Dir ("a", [])
@@ -87,7 +114,7 @@ let d_dir = Dir ("d", [])
 
 let pack_a = add_item g_file (add_item f_file a_dir)
 
-let pack_d = add_item j_file (add_item k_file d_dir)
+let pack_d = add_item j_file (add_item k_file d_dir) *)
 
 
 (* let fs = Dir ("/", [
@@ -110,12 +137,11 @@ let pack_d = add_item j_file (add_item k_file d_dir)
 ]) *)
 
 let run () =
-  print_string "\n";
-  print_string "\n";
-  update_fs "Adding A" (add_item pack_a);
-  update_fs "Adding D" (add_item pack_d);
-  update_fs "CD A" (cd "a");
-  update_fs "Go back" (cd "..");
-  update_fs "CD D" (cd "d");
-  update_fs  "Go back" (cd "..");
-  print_string "\n";;
+  print_endline "";
+  Day1.printlist print_string commands;
+  populate_tuple_table commands;
+  print_ht tuple_table;
+  print_endline "";
+  print_endline "";
+  (* ignore (build_fs commands); *)
+  print_endline "";;
