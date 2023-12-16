@@ -102,6 +102,13 @@ let print_tuple tup = match tup with
   | (name, size) -> Printf.printf "(%s, %i)" name size
 
 let print_ht ht = print_endline ""; Hashtbl.iter (fun x y -> print_endline ""; print_string x; print_string " -> "; Day1.printlist print_tuple y) ht
+
+let rec tuple_to_fs_item tup = match tup with
+  | (name, size) -> if size = -1 then Dir (name, (List.map tuple_to_fs_item (Hashtbl.find tuple_table name))) else File (name, size)
+
+let build_fs () = fs.cur <- tuple_to_fs_item ("/", -1)
+
+(* let a_dir = Dir ("a", [])*)
 (* let f_file = File ("f", 29116)
 let g_file = File ("g", 2557)
 
@@ -143,5 +150,7 @@ let run () =
   print_ht tuple_table;
   print_endline "";
   print_endline "";
+  build_fs ();
+  print_fs_item fs.cur;
   (* ignore (build_fs commands); *)
   print_endline "";;
