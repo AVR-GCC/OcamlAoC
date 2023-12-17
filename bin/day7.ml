@@ -24,20 +24,20 @@ $ ls
 
 type fs_item =
   | File of string * int
-  | Dir of string * fs_item list
+  | Dir of string * int * fs_item list
   | None
 
 let print_fs_item_name itm = match itm with
-  | Dir (name, _) | File (name, _) -> print_string name
+  | Dir (name, _, _) | File (name, _) -> print_string name
   | _ -> print_string "-"
 
 let print_fs_item itm = let rec print_fs_item_ind indentation item = print_string indentation; match item with
   | File (_, size) -> print_string "- "; print_fs_item_name item; print_string " (file, size="; print_int size; print_string ") "; print_string "\n"
-  | Dir (_, lst) -> print_string "- "; print_fs_item_name item; print_string " (dir) "; print_string "\n"; List.fold_left (fun _ elem -> print_fs_item_ind (indentation ^ "  ") elem) () lst
+  | Dir (_, size, lst) -> print_string "- "; print_fs_item_name item; print_string " (dir, size="; print_int size; print_string ") "; print_string "\n"; List.fold_left (fun _ elem -> print_fs_item_ind (indentation ^ "  ") elem) () lst
   | None -> () in
   print_fs_item_ind "" itm
 
-let root = Dir ("/", [])
+let root = Dir ("/", 0, [])
 
 type fs_holder = { mutable cur: fs_item; }
 type callstack_holder = { mutable cur: fs_item list; }
@@ -49,15 +49,15 @@ let callstack: callstack_holder = { cur = [] }
 let print_fs title = print_endline title; print_fs_item fs.cur; print_endline ""
 
 let add_item item dir = match dir with
-  | Dir (name, lst) -> (match item with
-    | Dir (child_name, child_lst) -> Dir (name, (Dir (child_name, child_lst))::lst)
-    | File (child_name, child_size) -> Dir (name, (File (child_name, child_size))::lst)
-    | None -> Dir (name, lst))
+  | Dir (name, size, lst) -> (match item with
+    | Dir (child_name, child_size, child_lst) -> Dir (name, size + child_size, (Dir (child_name, child_size, child_lst))::lst)
+    | File (child_name, child_size) -> Dir (name, size + child_size, (File (child_name, child_size))::lst)
+    | None -> Dir (name, size, lst))
   | _ -> dir
 
 let rec find_item name lst = match lst with
   | h::t -> (match h with
-    | Dir (h_name, _) | File (h_name, _) -> if name = h_name then h else find_item name t
+    | Dir (h_name, _, _) | File (h_name, _) -> if name = h_name then h else find_item name t
     | _ -> None)
   | _ -> None
 
@@ -70,7 +70,7 @@ let pop_callstack () = match callstack.cur with
   | h::t -> callstack.cur <- t; h
 
 let cd path pwd = match pwd with
-  | Dir (_, lst) -> if path = ".." then
+  | Dir (_, _, lst) -> if path = ".." then
     pop_callstack () else (push_callstack pwd; (find_item path lst))
   | _ -> None
 
@@ -104,7 +104,14 @@ let print_tuple tup = match tup with
 let print_ht ht = print_endline ""; Hashtbl.iter (fun x y -> print_endline ""; print_string x; print_string " -> "; Day1.printlist print_tuple y) ht
 
 let rec tuple_to_fs_item tup = match tup with
-  | (name, size) -> if size = -1 then Dir (name, (List.map tuple_to_fs_item (Hashtbl.find tuple_table name))) else File (name, size)
+  | (name, size) -> if size = -1 then
+    let child_list = List.map tuple_to_fs_item (Hashtbl.find tuple_table name) in
+    let total_size = List.fold_left (fun acc elem -> match elem with
+      | File (_, size) -> acc + size
+      | Dir (_, size, _) -> acc + size
+      | _ -> acc) 0 child_list in
+    Dir (name, total_size, child_list)
+    else File (name, size)
 
 let build_fs () = fs.cur <- tuple_to_fs_item ("/", -1)
 
