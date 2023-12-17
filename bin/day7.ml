@@ -41,10 +41,13 @@ let root = Dir ("/", 0, [])
 
 type fs_holder = { mutable cur: fs_item; }
 type callstack_holder = { mutable cur: fs_item list; }
+type sizes_holder = { mutable cur: int list; }
 
 let fs: fs_holder = { cur = root }
 
 let callstack: callstack_holder = { cur = [] }
+
+let sizes_less_than_100000_holder: sizes_holder = { cur = [] }
 
 let print_fs title = print_endline title; print_fs_item fs.cur; print_endline ""
 
@@ -101,7 +104,9 @@ let rec populate_tuple_table cmds = match cmds with
 let print_tuple tup = match tup with
   | (name, size) -> Printf.printf "(%s, %i)" name size
 
-let print_ht ht = print_endline ""; Hashtbl.iter (fun x y -> print_endline ""; print_string x; print_string " -> "; Day1.printlist print_tuple y) ht
+let print_ht ht = Hashtbl.iter (fun x y -> print_endline ""; print_string x; print_string " -> "; Day1.printlist print_tuple y) ht
+
+let add_dir_size new_size = sizes_less_than_100000_holder.cur <- new_size::sizes_less_than_100000_holder.cur
 
 let rec tuple_to_fs_item tup = match tup with
   | (name, size) -> if size = -1 then
@@ -110,6 +115,7 @@ let rec tuple_to_fs_item tup = match tup with
       | File (_, size) -> acc + size
       | Dir (_, size, _) -> acc + size
       | _ -> acc) 0 child_list in
+    if total_size < 100000 then add_dir_size total_size;
     Dir (name, total_size, child_list)
     else File (name, size)
 
@@ -151,13 +157,23 @@ let pack_d = add_item j_file (add_item k_file d_dir) *)
 ]) *)
 
 let run () =
-  print_endline "";
-  Day1.printlist print_string commands;
   populate_tuple_table commands;
+  print_endline "";
+  print_endline "";
+  print_endline "Directory table:";
   print_ht tuple_table;
-  print_endline "";
-  print_endline "";
   build_fs ();
+  print_endline "";
+  print_endline "";
+  print_endline "File system:";
   print_fs_item fs.cur;
+  print_endline "";
+  print_endline "";
+  print_endline "Directories with total size less than 100000:";
+  Day1.printlist print_int sizes_less_than_100000_holder.cur;
+  print_endline "";
+  print_endline "";
+  print_endline "With sum:";
+  print_int (List.fold_left (fun acc elem -> acc + elem) 0 sizes_less_than_100000_holder.cur);
   (* ignore (build_fs commands); *)
   print_endline "";;
