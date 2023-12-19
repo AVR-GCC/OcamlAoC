@@ -166,11 +166,11 @@ let btt i j = (List.length (List.hd forest) - j - 1, i)
 let get_increment_map_func fn i j = match fn i j with
   | (r, c) -> increment_map r c
 
-let rotated_im i j = increment_map j i
+let rotated_im = get_increment_map_func ttb
 
-let reversed_im i j = increment_map i (List.length forest - j - 1)
+let reversed_im = get_increment_map_func rtl
 
-let reversed_rotated_im i j = increment_map (List.length (List.hd forest) - j - 1) i
+let reversed_rotated_im = get_increment_map_func btt
 
 let left_to_right () = do_direction increment_map forest
 
