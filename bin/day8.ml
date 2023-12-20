@@ -128,13 +128,23 @@ module PairMap = Map.Make(struct
 end)
 
 type pair_map_holder = { mutable cur: int PairMap.t }
+type pair_map_holder_views = { mutable cur: int list list PairMap.t }
 
-let forest_map = { cur = PairMap.empty }
+let forest_map: pair_map_holder = { cur = PairMap.empty }
+let views_map: pair_map_holder_views = { cur = PairMap.empty }
+let scenic_map: pair_map_holder = { cur = PairMap.empty }
 
 let get_from_map key = if PairMap.mem key forest_map.cur
   then PairMap.find key forest_map.cur
   else 0
 
+let get_from_views key = if PairMap.mem key views_map.cur
+  then PairMap.find key views_map.cur
+  else []
+
+let get_from_scenic_scores key = if PairMap.mem key scenic_map.cur
+  then PairMap.find key scenic_map.cur
+  else 0
 let increment_map i j = PairMap.update (i, j) (fun x -> match x with | None -> Some 1 | Some y -> Some (y + 1)) forest_map.cur
 
 let map_2d mat fn = ignore (List.mapi (fun i row ->
@@ -181,12 +191,40 @@ let top_to_bottom () = do_direction rotated_im rotated_forest
 let bottom_to_top () = do_direction reversed_rotated_im tserof_detator
 
 let print_map () = print_newline (); map_2d forest (fun i j _ -> print_int (get_from_map (i, j))); print_newline ()
+let print_scenic_scores () = print_newline (); map_2d forest (fun i j _ -> print_int (get_from_scenic_scores (i, j)); print_string " "); print_newline ()
+let print_views () = print_newline (); map_2d forest (fun i j _ -> Day5.print_tuple print_int (i, j); print_string " -> "; Day1.printlist (Day1.printlist print_int) (get_from_views(i, j)); print_newline()); print_newline ()
 
 let print_forest () = print_newline (); map_2d forest (fun _ _ v -> print_int v); print_newline ()
 
 let count_zeros () = List.mapi (fun i row -> List.mapi (fun j _ -> if get_from_map (i, j) = 0 then 1 else 0) row) forest |> List.flatten |> List.fold_left (+) 0
 
+let get_max_int lst = List.fold_left (fun acc x -> if x > acc then x else acc) 0 lst
+
+let get_top_view () = List.mapi (fun i row -> List.mapi (fun j _ -> get_from_scenic_scores (i, j)) row) forest |> List.flatten |> get_max_int
+
 let count_visible_trees () = List.length forest * List.length (List.hd forest) - count_zeros ()
+
+let collect_views_row index_convert i row = let rec collect_views_row' row' j = match row' with
+  | [] -> ()
+  | _ :: ts -> views_map.cur <- PairMap.update (index_convert i j) (fun x -> match x with | None -> Some [ts] | Some y -> Some (ts :: y)) views_map.cur; collect_views_row' ts (j + 1) in
+  collect_views_row' row 0
+
+let collect_views_mat index_convert mat = let rec collect_views_mat' mat' i = match mat' with
+  | [] -> ()
+  | r :: rs -> collect_views_row index_convert i r; collect_views_mat' rs (i + 1) in
+  collect_views_mat' mat 0
+
+let collect_views () = collect_views_mat ltr forest; collect_views_mat rtl tserof; collect_views_mat ttb rotated_forest; collect_views_mat btt tserof_detator
+
+let rec count_trees height row = match row with
+  | [] -> 0
+  | t :: ts -> if height > t then 1 + count_trees height ts else 1
+
+let rec calculate_scenic_score height views = match views with
+  | [] -> 1
+  | v :: vs -> let trees = count_trees height v in trees * calculate_scenic_score height vs
+
+let calculate_scenic_scores () = map_2d forest (fun i j v -> scenic_map.cur <- PairMap.update (i, j) (fun x -> let scenic_score = calculate_scenic_score v (PairMap.find (i, j) views_map.cur) in match x with | _ -> Some (scenic_score)) scenic_map.cur)
 
 let run () =
   print_newline ();
@@ -200,4 +238,12 @@ let run () =
   print_map ();
   print_endline "Visible trees count:";
   print_int (count_visible_trees ());
+  collect_views ();
+  calculate_scenic_scores ();
+  (* print_endline "The views for each tree:";
+  print_views (); *)
+  print_endline "The scenic scores for each tree:";
+  print_scenic_scores ();
+  print_endline "The top view:";
+  print_int (get_top_view ());
   print_newline ();;
