@@ -2033,7 +2033,11 @@ let update_tale_position (hx, hy) (tx, ty) = match (hx - tx, hy - ty) with
   | (xdiff, 0) -> ((tx + if xdiff < 0 then -1 else 1), ty)
   | (xdiff, ydiff) -> ((tx + if xdiff < 0 then -1 else 1), (ty + if ydiff < 0 then -1 else 1))
 
-let tale_positions = List.tl @@ List.rev @@ List.fold_left (fun acc elem -> (update_tale_position elem (List.hd acc))::acc) [(0, 0)] head_positions
+let trace_next_link prev_link_positions = List.tl @@ List.rev @@ List.fold_left (fun acc elem -> (update_tale_position elem (List.hd acc))::acc) [(0, 0)] prev_link_positions
+
+let tale_positions = trace_next_link head_positions
+
+let ninth_link_positions = List.fold_left (fun acc _ -> trace_next_link acc) head_positions [1; 2; 3; 4; 5; 6; 7; 8; 9]
 
 module PairSet = Set.Make(struct 
   type t = int * int
@@ -2041,6 +2045,8 @@ module PairSet = Set.Make(struct
 end)
 
 let positions_set = PairSet.of_list tale_positions
+
+let ninth_link_positions_set = PairSet.of_list ninth_link_positions
 
 let maxs_and_mins lst = let rec maxs_and_mins' lst maxx maxy minx miny = match lst with
   | [] -> (maxx, maxy, minx, miny)
@@ -2060,12 +2066,30 @@ let print_grid positions_set = let maxx, maxy, minx, miny = maxs_and_mins tale_p
 
 let run () =
   print_newline ();
+  print_endline "Head positions:";
   Day1.printlist (Day5.print_tuple print_int) (head_positions);
   print_newline ();
   print_newline ();
+  print_endline "Tale positions list:";
   Day1.printlist (Day5.print_tuple print_int) (tale_positions);
   print_newline ();
+  print_newline ();
+  print_endline "Tale positions map:";
+  print_grid positions_set;
+  print_newline ();
+  print_newline ();
+  print_endline "Total tale positions:";
   print_int @@ PairSet.cardinal positions_set;
   print_newline ();
-  print_grid positions_set;
+  print_newline ();
+  print_endline "Ninth link positions list:";
+  Day1.printlist (Day5.print_tuple print_int) (ninth_link_positions);
+  print_newline ();
+  print_newline ();
+  print_endline "Ninth link positions map:";
+  print_grid ninth_link_positions_set;
+  print_newline ();
+  print_newline ();
+  print_endline "Total ninth link positions:";
+  print_int @@ PairSet.cardinal ninth_link_positions_set;
   print_newline ();;
