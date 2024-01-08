@@ -1,0 +1,223 @@
+let test_string = "Monkey 0:
+  Starting items: 85, 79, 63, 72
+  Operation: new = old * 17
+  Test: divisible by 2
+    If true: throw to monkey 2
+    If false: throw to monkey 6
+
+Monkey 1:
+  Starting items: 53, 94, 65, 81, 93, 73, 57, 92
+  Operation: new = old * old
+  Test: divisible by 7
+    If true: throw to monkey 0
+    If false: throw to monkey 2
+
+Monkey 2:
+  Starting items: 62, 63
+  Operation: new = old + 7
+  Test: divisible by 13
+    If true: throw to monkey 7
+    If false: throw to monkey 6
+
+Monkey 3:
+  Starting items: 57, 92, 56
+  Operation: new = old + 4
+  Test: divisible by 5
+    If true: throw to monkey 4
+    If false: throw to monkey 5
+
+Monkey 4:
+  Starting items: 67
+  Operation: new = old + 5
+  Test: divisible by 3
+    If true: throw to monkey 1
+    If false: throw to monkey 5
+
+Monkey 5:
+  Starting items: 85, 56, 66, 72, 57, 99
+  Operation: new = old + 6
+  Test: divisible by 19
+    If true: throw to monkey 1
+    If false: throw to monkey 0
+
+Monkey 6:
+  Starting items: 86, 65, 98, 97, 69
+  Operation: new = old * 13
+  Test: divisible by 11
+    If true: throw to monkey 3
+    If false: throw to monkey 7
+
+Monkey 7:
+  Starting items: 87, 68, 92, 66, 91, 50, 68
+  Operation: new = old + 2
+  Test: divisible by 17
+    If true: throw to monkey 4
+    If false: throw to monkey 3"
+
+let lines = String.split_on_char '\n' test_string
+
+let monkeys_string_lists = List.rev @@ List.map List.rev @@ List.map (List.map String.trim) @@ Day1.split_list (fun x -> x) "" lines
+
+type monkey = {
+  operation: int -> int;
+  test: int -> bool;
+  throw_to: bool -> int;
+}
+
+let process_starting_items_string starting_items_string = 
+  match String.split_on_char ':' starting_items_string with
+    | "Starting items" :: starting_items_str :: [] -> 
+      List.map (fun s -> int_of_string (String.trim s)) @@ String.split_on_char ',' (String.trim starting_items_str)
+    | _ -> failwith "Invalid starting items string"
+
+let process_operation_string operation_string = 
+  match String.split_on_char ':' operation_string with
+    | "Operation" :: operation_str :: [] -> 
+      let splitted = String.split_on_char ' ' operation_str in
+      let operation = match splitted with
+        | _ :: "new" :: "=" :: "old" :: "*" :: "old" :: [] -> 
+          (fun old -> old * old)
+        | _ :: "new" :: "=" :: "old" :: "*" :: multiplier_str :: [] -> 
+          let multiplier = int_of_string multiplier_str in
+          (fun old -> old * multiplier)
+        | _ :: "new" :: "=" :: "old" :: "+" :: adder_str :: [] -> 
+          let adder = int_of_string adder_str in
+          (fun old -> old + adder)
+        | _ -> print_endline ("failed parsing operation string: " ^ operation_str); failwith "Invalid operation string"
+      in
+      operation
+    | _ -> print_endline ("failed parsing operation string: " ^ operation_string); failwith "Invalid operation string"
+
+let process_test_string test_string = 
+  match String.split_on_char ':' test_string with
+    | "Test" :: test_str :: [] -> 
+      let test = match String.split_on_char ' ' test_str with
+        | _ :: "divisible" :: "by" :: divisor_str :: [] -> 
+          let divisor = int_of_string divisor_str in
+          (fun old -> old mod divisor = 0)
+        | _ -> print_endline ("failed parsing test string: " ^ test_string); failwith "Invalid test string"
+      in
+      test
+    | _ -> print_endline ("failed parsing test string: " ^ test_string); failwith "Invalid test string"
+
+let process_throw_to_strings throw_to_strings = match throw_to_strings with
+  | true_str :: false_str :: [] -> (match (String.split_on_char ' ' true_str, String.split_on_char ' ' false_str) with
+    | "If" :: "true:" :: "throw" :: "to" :: "monkey" :: throw_to_true_str :: [], "If" :: "false:" :: "throw" :: "to" :: "monkey" :: throw_to_false_str :: [] -> 
+      let throw_to_true = int_of_string throw_to_true_str in
+      let throw_to_false = int_of_string throw_to_false_str in
+      (fun b -> if b then throw_to_true else throw_to_false)
+    | _ -> failwith "Invalid throw to strings")
+  | _ -> failwith "Invalid throw to strings"
+  
+
+let process_monkey_string_list string_list = match string_list with
+  | _ :: starting_items_str :: operation_str :: test_str :: throw_to_true :: throw_to_false :: [] ->
+    let operation = process_operation_string operation_str in
+    let test = process_test_string test_str in
+    let throw_to = process_throw_to_strings [throw_to_true; throw_to_false] in
+    let starting_items = process_starting_items_string starting_items_str in
+    ({ operation = operation; test = test; throw_to = throw_to }, starting_items)
+  | _ -> failwith "Invalid list"
+
+type monkey_list_type = { mutable cur: monkey list }
+type items_list_type = { mutable cur: int list array }
+type items_inspected_type = { mutable cur: int array }
+
+let monkey_list: monkey_list_type = { cur = [] }
+let items_list: items_list_type = { cur = [||] }
+let items_inspected: items_inspected_type = { cur = [||] }
+
+let init_monkeys string_lists = 
+  let monkeys_with_starting_items = List.map process_monkey_string_list string_lists in
+  let monkeys = List.map (fun (monkey, _) -> monkey) monkeys_with_starting_items in
+  let starting_inspected = Array.make (List.length monkeys) 0 in
+  let starting_items_arr = Array.make (List.length monkeys) [] in
+  List.iteri (fun i (_, starting_items) -> starting_items_arr.(i) <- List.rev starting_items) monkeys_with_starting_items;
+  items_inspected.cur <- starting_inspected; monkey_list.cur <- monkeys; items_list.cur <- starting_items_arr
+
+let print_array prnt arr = 
+  print_string "[";
+  Array.iteri (fun i x -> prnt x; if (i < Array.length arr - 1) then print_string ", ") arr;
+  print_string "]"
+
+let print_monkey start_number monkey = 
+  print_endline @@ "Monkey " ^ (string_of_int start_number) ^ ": ";
+  print_string "Operation: ";
+  let after_operation = monkey.operation start_number in
+  print_int after_operation;
+  print_newline ();
+  let test_result = monkey.test after_operation in
+  print_string "Test: ";
+  print_string @@ if test_result then "true" else "false";
+  print_newline ();
+  print_string "Throw to: ";
+  print_int @@ monkey.throw_to test_result;
+  print_newline ()
+
+let print_mixed_tuple prnt1 prnt2 (x, y) = 
+  print_string "(";
+  prnt1 x;
+  print_string ", ";
+  prnt2 y;
+  print_string ")"
+  
+
+let monkey_inspect_item op monkey index item =
+  let monkey_op_done = monkey.operation item in
+  let monkey_bored_done = op monkey_op_done in
+  let monkey_test_done = monkey.test monkey_bored_done in
+  let monkey_throw_to = monkey.throw_to monkey_test_done in
+  items_list.cur.(monkey_throw_to) <- monkey_bored_done :: items_list.cur.(monkey_throw_to);
+  items_inspected.cur.(index) <- items_inspected.cur.(index) + 1
+
+let do_single_monkey_round i monkey = 
+  List.iter (monkey_inspect_item (fun x -> x / 3) monkey i) (List.rev items_list.cur.(i));
+  items_list.cur.(i) <- []
+
+let print_full_round i = 
+  print_newline ();
+  print_endline ("After round " ^ (string_of_int i) ^ " the monkeys are holding items with these worry levels:");
+  Array.iteri (fun j monkey_items -> 
+    print_string ("Monkey " ^ (string_of_int j) ^ ": ");
+    Day1.printlist print_int (List.rev monkey_items); print_newline ()) items_list.cur
+
+let do_full_round j = 
+  List.iteri (fun i monkey -> do_single_monkey_round i monkey) monkey_list.cur; print_full_round j
+
+let do_x_rounds total = let rec do_x_rounds' x =
+  if x > 0 then (do_full_round (total - x + 1); do_x_rounds' (x - 1)) in
+  do_x_rounds' total
+
+let two_max_items_of_array arr = 
+  let rec two_max_items_of_array' arr max1 max2 i =
+    if i < Array.length arr then
+      if arr.(i) > max1 then two_max_items_of_array' arr arr.(i) max1 (i + 1)
+      else if arr.(i) > max2 then two_max_items_of_array' arr max1 arr.(i) (i + 1)
+      else two_max_items_of_array' arr max1 max2 (i + 1)
+    else (max1, max2) in
+  two_max_items_of_array' arr 0 0 0
+
+let run () =
+  print_newline ();
+  Day1.printlist (Day1.printlist print_string) monkeys_string_lists;
+  print_newline ();
+  init_monkeys monkeys_string_lists;
+  print_newline ();
+  print_endline "Starting items:";
+  print_full_round 0;
+  print_newline ();
+  do_x_rounds 20;
+  print_newline ();
+  print_endline "Number of items inspected by each monkey:";
+  print_array print_int items_inspected.cur;
+  print_newline ();
+  print_newline ();
+  print_endline "Max two active monkeys:";
+  let top_monkeys = two_max_items_of_array items_inspected.cur in
+  Day5.print_tuple print_int top_monkeys;
+  print_newline ();
+  print_newline ();
+  print_endline "Monkey business:";
+  let monkey_business = match top_monkeys with (x, y) -> x * y in
+  print_int monkey_business;
+  print_newline ();;
