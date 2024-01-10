@@ -178,7 +178,7 @@ let run () =
   print_endline "Starting items:";
   print_full_round 0;
   print_newline ();
-  do_x_rounds 20;
+  do_x_rounds 1000;
   print_newline ();
   print_endline "Number of items inspected by each monkey:";
   print_array print_int items_inspected.cur;
