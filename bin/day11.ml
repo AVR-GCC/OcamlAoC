@@ -32,7 +32,7 @@ let monkeys_string_lists = List.rev @@ List.map List.rev @@ List.map (List.map S
 
 type monkey = {
   operation: int -> int;
-  test: int -> bool;
+  divider: int;
   throw_to: bool -> int;
 }
 
@@ -60,13 +60,11 @@ let process_operation_string operation_string =
       operation
     | _ -> print_endline ("failed parsing operation string: " ^ operation_string); failwith "Invalid operation string"
 
-let process_test_string test_string = 
+let process_divider_string test_string = 
   match String.split_on_char ':' test_string with
     | "Test" :: test_str :: [] -> 
       let test = match String.split_on_char ' ' test_str with
-        | _ :: "divisible" :: "by" :: divisor_str :: [] -> 
-          let divisor = int_of_string divisor_str in
-          (fun old -> old mod divisor = 0)
+        | _ :: "divisible" :: "by" :: divisor_str :: [] -> int_of_string divisor_str
         | _ -> print_endline ("failed parsing test string: " ^ test_string); failwith "Invalid test string"
       in
       test
@@ -85,10 +83,10 @@ let process_throw_to_strings throw_to_strings = match throw_to_strings with
 let process_monkey_string_list string_list = match string_list with
   | _ :: starting_items_str :: operation_str :: test_str :: throw_to_true :: throw_to_false :: [] ->
     let operation = process_operation_string operation_str in
-    let test = process_test_string test_str in
+    let divider = process_divider_string test_str in
     let throw_to = process_throw_to_strings [throw_to_true; throw_to_false] in
     let starting_items = process_starting_items_string starting_items_str in
-    ({ operation = operation; test = test; throw_to = throw_to }, starting_items)
+    ({ operation = operation; divider = divider; throw_to = throw_to }, starting_items)
   | _ -> failwith "Invalid list"
 
 type monkey_list_type = { mutable cur: monkey list }
@@ -118,7 +116,7 @@ let print_monkey start_number monkey =
   let after_operation = monkey.operation start_number in
   print_int after_operation;
   print_newline ();
-  let test_result = monkey.test after_operation in
+  let test_result = (after_operation mod monkey.divider) == 0 in
   print_string "Test: ";
   print_string @@ if test_result then "true" else "false";
   print_newline ();
@@ -137,7 +135,7 @@ let print_mixed_tuple prnt1 prnt2 (x, y) =
 let monkey_inspect_item op monkey index item =
   let monkey_op_done = monkey.operation item in
   let monkey_bored_done = op monkey_op_done in
-  let monkey_test_done = monkey.test monkey_bored_done in
+  let monkey_test_done = monkey_bored_done mod monkey.divider == 0 in
   let monkey_throw_to = monkey.throw_to monkey_test_done in
   items_list.cur.(monkey_throw_to) <- monkey_bored_done :: items_list.cur.(monkey_throw_to);
   items_inspected.cur.(index) <- items_inspected.cur.(index) + 1
