@@ -142,4 +142,21 @@ let run () =
   print_newline ();
   print_endline "Steps:";
   print_int (List.length path - 1);
+  print_newline ();
+  print_newline ();
+  let checked_array_2 = Array.make_matrix height width max_int in
+  let path_from_any_a_opt = find_path height width (int_of_char 'z' - 97) checked_array_2 heights_array [] (endi, endj)
+    (fun cur_height prev_height -> prev_height - cur_height > 1)
+    (fun i j -> let he = heights_array.(i).(j) in he = 0) in
+  print_newline ();
+  print_newline ();
+  print_endline "Path to any a:";
+  match path_from_any_a_opt with None -> print_string "No path found" | Some (path_to_a) -> Day1.printlist (Day5.print_tuple print_int) path_to_a;
+  print_newline ();
+  print_newline ();
+  draw_path (Array.length heights_array, Array.length heights_array.(0)) (List.rev path_to_a);
+  print_newline ();
+  print_newline ();
+  print_endline "Steps:";
+  print_int (List.length path_to_a - 1);
   print_newline ();;
