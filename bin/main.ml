@@ -1,1 +1,1 @@
-let () = Day11.run ()
+let () = Day12.run ()
