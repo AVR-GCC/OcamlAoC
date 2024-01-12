@@ -82,15 +82,15 @@ let print_int_tuple_list lst = Day1.printlist print_int_tuple lst
 
 let print_int_tuple_list_option lst = print_option print_int_tuple_list lst
 
-let rec find_path height width prev_height checked_array heights_array path (i, j) cond =
+let rec find_path height width prev_height checked_array heights_array path (i, j) block_cond end_cond =
   if i < 0 || j < 0 || i >= height || j >= width then (None) else
-  let cell_height = heights_array.(i).(j) in
-  if cell_height - prev_height > 1 then (None) else
-  if cond (i, j) then Some ((i, j)::path) else
+  let cur_height = heights_array.(i).(j) in
+  if block_cond cur_height prev_height then (None) else
+  if end_cond i j then Some ((i, j)::path) else
   if (checked_array.(i).(j) <= List.length path + 1) then (None) else (
   checked_array.(i).(j) <- List.length path + 1;
   let rests = List.map (fun (di, dj) ->
-    find_path height width cell_height checked_array heights_array ((i, j)::path) (i + di, j + dj) cond) directions in
+    find_path height width cur_height checked_array heights_array ((i, j)::path) (i + di, j + dj) block_cond end_cond) directions in
   List.fold_left
     (fun min_opt cur_opt ->
     match (min_opt, cur_opt) with
@@ -130,7 +130,7 @@ let run () =
   print_newline ();
   print_endline "End position:";
   Day5.print_tuple print_int (endi, endj);
-  let path_opt = find_path height width (int_of_char 'a' - 82) checked_array heights_array [] start_pos (fun (i, j) -> i = endi && j = endj) in
+  let path_opt = find_path height width (int_of_char 'a' - 97) checked_array heights_array [] start_pos (fun cur_height prev_height -> cur_height - prev_height > 1) (fun i j -> i = endi && j = endj) in
   print_newline ();
   print_newline ();
   print_endline "Path:";
