@@ -76,9 +76,9 @@ let print_option print_elem opt = match opt with
   | None -> print_string "None"
   | Some (elem) -> print_elem elem
 
-let print_int_tuple tup = Myutils.print_tuple print_int tup
+let print_int_tuple = Myutils.print_tuple print_int
 
-let print_int_tuple_list lst = Myutils.printlist print_int_tuple lst
+let print_int_tuple_list = Myutils.printlist print_int_tuple
 
 let print_int_tuple_list_option lst = print_option print_int_tuple_list lst
 
