@@ -17,3 +17,5 @@ let split_list manipulate delimiter lst =
   get_chunks [] lst
 
 let sum = List.fold_left (+) 0
+
+let max_list = List.fold_left (fun acc elem -> max acc elem) min_int
