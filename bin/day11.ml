@@ -135,11 +135,6 @@ let init_monkeys string_lists =
   List.iteri (fun i (_, starting_items) -> starting_items_arr.(i) <- List.rev starting_items) monkeys_with_starting_items;
   items_inspected.cur <- starting_inspected; monkey_list.cur <- monkeys; items_list.cur <- starting_items_arr
 
-let print_array prnt arr = 
-  print_string "[";
-  Array.iteri (fun i x -> prnt x; if (i < Array.length arr - 1) then print_string ", ") arr;
-  print_string "]"
-
 let print_monkey start_number monkey = 
   print_endline @@ "Monkey " ^ (string_of_int start_number) ^ ": ";
   print_string "Operation: ";

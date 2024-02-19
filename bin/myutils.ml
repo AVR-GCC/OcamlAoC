@@ -24,3 +24,8 @@ let print_tuple prnt tup = match tup with
   | (one, two) -> print_string "("; prnt one; print_string ", "; prnt two; print_string ")"
 
 let explode str = List.rev (String.fold_left (fun acc elem -> (String.make 1 elem)::acc) [] str)
+
+let print_array prnt arr = 
+  print_string "[";
+  Array.iteri (fun i x -> prnt x; if (i < Array.length arr - 1) then print_string ", ") arr;
+  print_string "]"

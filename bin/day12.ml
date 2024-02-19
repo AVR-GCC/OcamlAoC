@@ -119,7 +119,7 @@ let run () =
   print_newline ();
   let heights_array = twod_array_of_twod_list heights_list in
   print_endline "Heights array:";
-  Day11.print_array (Day11.print_array print_int) heights_array;
+  print_array (print_array print_int) heights_array;
   let start_pos = find_char 'S' 0 heights_list in
   let (endi, endj) = find_char 'E' 0 heights_list in
   let (height, width) = (Array.length heights_array, Array.length heights_array.(0)) in
