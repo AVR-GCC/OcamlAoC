@@ -2067,11 +2067,11 @@ let print_grid positions_set = let maxx, maxy, minx, miny = maxs_and_mins tale_p
 let run () =
   print_newline ();
   print_endline "Head positions:";
-  Day1.printlist (Day5.print_tuple print_int) (head_positions);
+  Myutils.printlist (Day5.print_tuple print_int) (head_positions);
   print_newline ();
   print_newline ();
   print_endline "Tale positions list:";
-  Day1.printlist (Day5.print_tuple print_int) (tale_positions);
+  Myutils.printlist (Day5.print_tuple print_int) (tale_positions);
   print_newline ();
   print_newline ();
   print_endline "Tale positions map:";
@@ -2083,7 +2083,7 @@ let run () =
   print_newline ();
   print_newline ();
   print_endline "Ninth link positions list:";
-  Day1.printlist (Day5.print_tuple print_int) (ninth_link_positions);
+  Myutils.printlist (Day5.print_tuple print_int) (ninth_link_positions);
   print_newline ();
   print_newline ();
   print_endline "Ninth link positions map:";

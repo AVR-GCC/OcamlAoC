@@ -177,7 +177,7 @@ let print_full_round i =
   print_endline ("After round " ^ (string_of_int i) ^ " the monkeys are holding items with these worry levels:");
   Array.iteri (fun j monkey_items -> 
     print_string ("Monkey " ^ (string_of_int j) ^ ": ");
-    Day1.printlist print_int (List.rev monkey_items); print_newline ()) items_list.cur
+    Myutils.printlist print_int (List.rev monkey_items); print_newline ()) items_list.cur
 
 let do_full_round total_mod j = 
   List.iteri (fun i monkey -> do_single_monkey_round total_mod i monkey) monkey_list.cur; print_full_round j
@@ -198,7 +198,7 @@ let two_max_items_of_array arr =
 let get_max_int lst = List.fold_left (fun acc x -> if x > acc then x else acc) 0 lst
 let run () =
   print_newline ();
-  Day1.printlist (Day1.printlist print_string) monkeys_string_lists;
+  Myutils.printlist (Myutils.printlist print_string) monkeys_string_lists;
   print_newline ();
   init_monkeys monkeys_string_lists;
   print_newline ();

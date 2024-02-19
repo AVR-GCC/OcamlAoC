@@ -576,9 +576,9 @@ let cut_n list n =
     | _ -> (List.rev acc, lst) in
   cut_n_rec [] list n
 
-let print_stack = Day1.printlist print_string
+let print_stack = Myutils.printlist print_string
 
-let print_stacks = Day1.printlist print_stack
+let print_stacks = Myutils.printlist print_stack
 
 let tl lst = match lst with
   | [] -> []
@@ -618,7 +618,7 @@ let run () =
   print_string "\nStart stacks:\n";
   print_stacks stacks_list;
   print_string "\nDoing moves:\n";
-  Day1.printlist print_int_triplet move_triplets;
+  Myutils.printlist print_int_triplet move_triplets;
   print_string "\nFinal stacks 9000:\n";
   print_stacks final_stacks_9000;
   print_string "\nFinal message 9000:\n";

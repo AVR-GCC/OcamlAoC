@@ -1129,7 +1129,7 @@ let rec find_item name lst = match lst with
     | _ -> None)
   | _ -> None
 
-let update_fs title fn = fs.cur <- fn fs.cur; print_fs (title); Day1.printlist print_fs_item_name callstack.cur; print_endline ""; print_endline ""
+let update_fs title fn = fs.cur <- fn fs.cur; print_fs (title); Myutils.printlist print_fs_item_name callstack.cur; print_endline ""; print_endline ""
 
 let push_callstack node = callstack.cur <- node::callstack.cur
 
@@ -1172,13 +1172,13 @@ let populate_tuple_table cmnds = let rec populate_tuple_table_ind path cmds = ma
     | _ -> populate_tuple_table_ind path (ls_line::t))
   | _ -> () in
   print_endline "Populating tuple table...";
-  Day1.printlist print_string cmnds;
+  Myutils.printlist print_string cmnds;
   populate_tuple_table_ind [] cmnds
 
 let print_tuple tup = match tup with
   | (name, size) -> Printf.printf "(%s, %i)" name size
 
-let print_ht ht = Hashtbl.iter (fun x y -> print_endline ""; print_string x; print_string " -> "; Day1.printlist print_tuple y) ht
+let print_ht ht = Hashtbl.iter (fun x y -> print_endline ""; print_string x; print_string " -> "; Myutils.printlist print_tuple y) ht
 
 let add_dir_size new_size = sizes_less_than_100000_holder.cur <- new_size::sizes_less_than_100000_holder.cur
 let add_dir_size2 new_size = sizes_more_than_2080344_holder.cur <- new_size::sizes_more_than_2080344_holder.cur
@@ -1247,7 +1247,7 @@ let run () =
   print_endline "";
   print_endline "";
   print_endline "Directories with total size less than 100000:";
-  Day1.printlist print_int sizes_less_than_100000_holder.cur;
+  Myutils.printlist print_int sizes_less_than_100000_holder.cur;
   print_endline "";
   print_endline "";
   print_endline "With sum:";
@@ -1255,7 +1255,7 @@ let run () =
   print_endline "";
   print_endline "";
   print_endline "Directories with total size greater than 2080344:";
-  Day1.printlist print_int sizes_more_than_2080344_holder.cur;
+  Myutils.printlist print_int sizes_more_than_2080344_holder.cur;
   print_endline "";
   print_endline "";
   print_endline "";

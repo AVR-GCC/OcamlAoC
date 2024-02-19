@@ -2253,11 +2253,6 @@ let test_string = "10130
 4980
 6660"
 
-let printlist printelem lst = let rec middle = function
-| [] -> ()
-| h::t -> printelem h; if t = [] then () else print_string "; "; middle t in
-print_string "["; middle lst; print_string "]"
-
 let number_strings_array = test_string |> String.split_on_char '\n'
 
 let split_list manipulate delimiter lst =

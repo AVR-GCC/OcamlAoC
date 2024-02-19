@@ -78,7 +78,7 @@ let print_option print_elem opt = match opt with
 
 let print_int_tuple tup = Day5.print_tuple print_int tup
 
-let print_int_tuple_list lst = Day1.printlist print_int_tuple lst
+let print_int_tuple_list lst = Myutils.printlist print_int_tuple lst
 
 let print_int_tuple_list_option lst = print_option print_int_tuple_list lst
 
@@ -113,7 +113,7 @@ let run () =
   print_newline ();
   let heights_list = explode_2d test_string in
   print_endline "Heights list:";
-  Day1.printlist (Day1.printlist print_char) heights_list;
+  Myutils.printlist (Myutils.printlist print_char) heights_list;
   print_newline ();
   print_newline ();
   let heights_array = twod_array_of_twod_list heights_list in
@@ -134,7 +134,7 @@ let run () =
   print_newline ();
   print_newline ();
   print_endline "Path:";
-  match path_opt with None -> print_string "No path found" | Some (path) -> Day1.printlist (Day5.print_tuple print_int) path;
+  match path_opt with None -> print_string "No path found" | Some (path) -> Myutils.printlist (Day5.print_tuple print_int) path;
   print_newline ();
   print_newline ();
   draw_path (Array.length heights_array, Array.length heights_array.(0)) path;
@@ -151,7 +151,7 @@ let run () =
   print_newline ();
   print_newline ();
   print_endline "Path to any a:";
-  match path_from_any_a_opt with None -> print_string "No path found" | Some (path_to_a) -> Day1.printlist (Day5.print_tuple print_int) path_to_a;
+  match path_from_any_a_opt with None -> print_string "No path found" | Some (path_to_a) -> Myutils.printlist (Day5.print_tuple print_int) path_to_a;
   print_newline ();
   print_newline ();
   draw_path (Array.length heights_array, Array.length heights_array.(0)) (List.rev path_to_a);
