@@ -76,7 +76,7 @@ let print_option print_elem opt = match opt with
   | None -> print_string "None"
   | Some (elem) -> print_elem elem
 
-let print_int_tuple tup = Day5.print_tuple print_int tup
+let print_int_tuple tup = Myutils.print_tuple print_int tup
 
 let print_int_tuple_list lst = Myutils.printlist print_int_tuple lst
 
@@ -126,15 +126,15 @@ let run () =
   print_newline ();
   print_newline ();
   print_endline "Start position:";
-  Day5.print_tuple print_int start_pos;
+  Myutils.print_tuple print_int start_pos;
   print_newline ();
   print_endline "End position:";
-  Day5.print_tuple print_int (endi, endj);
+  Myutils.print_tuple print_int (endi, endj);
   let path_opt = find_path height width (int_of_char 'a' - 97) checked_array heights_array [] start_pos (fun cur_height prev_height -> cur_height - prev_height > 1) (fun i j -> i = endi && j = endj) in
   print_newline ();
   print_newline ();
   print_endline "Path:";
-  match path_opt with None -> print_string "No path found" | Some (path) -> Myutils.printlist (Day5.print_tuple print_int) path;
+  match path_opt with None -> print_string "No path found" | Some (path) -> Myutils.printlist (Myutils.print_tuple print_int) path;
   print_newline ();
   print_newline ();
   draw_path (Array.length heights_array, Array.length heights_array.(0)) path;
@@ -151,7 +151,7 @@ let run () =
   print_newline ();
   print_newline ();
   print_endline "Path to any a:";
-  match path_from_any_a_opt with None -> print_string "No path found" | Some (path_to_a) -> Myutils.printlist (Day5.print_tuple print_int) path_to_a;
+  match path_from_any_a_opt with None -> print_string "No path found" | Some (path_to_a) -> Myutils.printlist (Myutils.print_tuple print_int) path_to_a;
   print_newline ();
   print_newline ();
   draw_path (Array.length heights_array, Array.length heights_array.(0)) (List.rev path_to_a);

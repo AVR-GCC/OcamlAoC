@@ -213,7 +213,7 @@ let run () =
   print_newline ();
   print_endline "Max two active monkeys:";
   let top_monkeys = two_max_items_of_array items_inspected.cur in
-  Day5.print_tuple print_int top_monkeys;
+  Myutils.print_tuple print_int top_monkeys;
   print_newline ();
   print_newline ();
   print_endline "Monkey business:";

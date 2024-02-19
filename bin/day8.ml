@@ -192,7 +192,7 @@ let bottom_to_top () = do_direction reversed_rotated_im tserof_detator
 
 let print_map () = print_newline (); map_2d forest (fun i j _ -> print_int (get_from_map (i, j))); print_newline ()
 let print_scenic_scores () = print_newline (); map_2d forest (fun i j _ -> print_int (get_from_scenic_scores (i, j)); print_string " "); print_newline ()
-let print_views () = print_newline (); map_2d forest (fun i j _ -> Day5.print_tuple print_int (i, j); print_string " -> "; Myutils.printlist (Myutils.printlist print_int) (get_from_views(i, j)); print_newline()); print_newline ()
+let print_views () = print_newline (); map_2d forest (fun i j _ -> Myutils.print_tuple print_int (i, j); print_string " -> "; Myutils.printlist (Myutils.printlist print_int) (get_from_views(i, j)); print_newline()); print_newline ()
 
 let print_forest () = print_newline (); map_2d forest (fun _ _ v -> print_int v); print_newline ()
 

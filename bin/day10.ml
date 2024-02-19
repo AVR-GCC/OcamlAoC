@@ -171,11 +171,11 @@ let run () =
   print_newline ();
   print_newline ();
   print_endline "Machine states:";
-  Myutils.printlist (Day5.print_tuple print_int) machine_states;
+  Myutils.printlist (Myutils.print_tuple print_int) machine_states;
   print_newline ();
   print_newline ();
   print_endline "States during selected cycles:";
-  Myutils.printlist (Day5.print_tuple print_int) selected_states;
+  Myutils.printlist (Myutils.print_tuple print_int) selected_states;
   print_newline ();
   print_newline ();
   print_endline "Signal strengths:";
@@ -187,7 +187,7 @@ let run () =
   print_newline ();
   print_newline ();
   print_endline "All states to 240:";
-  Myutils.printlist (Day5.print_tuple print_int) all_states_to_240;
+  Myutils.printlist (Myutils.print_tuple print_int) all_states_to_240;
   print_newline ();
   print_newline ();
   print_endline "CRT:";

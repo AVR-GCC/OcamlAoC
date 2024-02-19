@@ -567,9 +567,6 @@ let print_triplet prnt trip = match trip with
 
 let print_int_triplet = print_triplet print_int
 
-let print_tuple prnt tup = match tup with
-  | (one, two) -> print_string "("; prnt one; print_string ", "; prnt two; print_string ")"
-
 let cut_n list n =
   let rec cut_n_rec acc lst k = if k = 0 then (List.rev acc, lst) else match lst with
     | h::t -> cut_n_rec (h::acc) t (k - 1)
