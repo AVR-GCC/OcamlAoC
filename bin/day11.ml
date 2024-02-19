@@ -56,7 +56,7 @@ Monkey 7:
 
 let lines = String.split_on_char '\n' test_string
 
-let monkeys_string_lists = List.rev @@ List.map List.rev @@ List.map (List.map String.trim) @@ Day1.split_list (fun x -> x) "" lines
+let monkeys_string_lists = List.rev @@ List.map List.rev @@ List.map (List.map String.trim) @@ Myutils.split_list (fun x -> x) "" lines
 
 type monkey = {
   operation: int -> int;

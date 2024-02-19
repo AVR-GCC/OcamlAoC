@@ -516,13 +516,13 @@ move 3 from 6 to 9"
 let str_to_lines = Day2.split_lines
 
 let all_lines_to_original_stack_and_moves_arrays lines =
-  let list = Day1.split_list (fun x -> x) "" lines in
+  let list = Myutils.split_list (fun x -> x) "" lines in
   match list with
   | h::n::_ -> (n, h)
   | _::[] -> ([], [])
   | _ -> ([], [])
 
-(* let two_arrays = Day1.split_list (fun x -> x) "" (str_to_lines test_string) *)
+(* let two_arrays = Myutils.split_list (fun x -> x) "" (str_to_lines test_string) *)
 let (stacks_and_numbers, moves) = all_lines_to_original_stack_and_moves_arrays (str_to_lines test_string)
 
 let num_stacks = ((match stacks_and_numbers with
