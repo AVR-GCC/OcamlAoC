@@ -183,7 +183,7 @@ let run () =
   print_newline ();
   print_newline ();
   print_endline "Sum of signal strengths:";
-  print_int (Day1.sum signal_strengths);
+  print_int (Myutils.sum signal_strengths);
   print_newline ();
   print_newline ();
   print_endline "All states to 240:";

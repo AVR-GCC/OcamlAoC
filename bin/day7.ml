@@ -1251,7 +1251,7 @@ let run () =
   print_endline "";
   print_endline "";
   print_endline "With sum:";
-  print_int (List.fold_left (fun acc elem -> acc + elem) 0 sizes_less_than_100000_holder.cur);
+  print_int (Myutils.sum sizes_less_than_100000_holder.cur);
   print_endline "";
   print_endline "";
   print_endline "Directories with total size greater than 2080344:";

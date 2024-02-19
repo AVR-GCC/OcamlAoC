@@ -15,3 +15,5 @@ let split_list manipulate delimiter lst =
   match chunk with
   | (this_chunk, new_remaining_list) -> get_chunks (this_chunk::result_so_far) new_remaining_list in
   get_chunks [] lst
+
+let sum = List.fold_left (+) 0

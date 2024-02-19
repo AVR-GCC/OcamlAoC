@@ -1,4 +1,3 @@
-open Day1
 let test_string = "C Z
 C Z
 A X
@@ -2537,7 +2536,7 @@ let game_results_wrong = List.map line_to_game_wrong lines;;
 let game_results = List.map line_to_game lines
 
 let run () = print_string "\nThe result given my original interpretation is: ";
-print_int (sum game_results_wrong);
+print_int (Myutils.sum game_results_wrong);
 print_string "\nThe result given the correct interpretation is: ";
-print_int (sum game_results);
+print_int (Myutils.sum game_results);
 print_string "\n";;

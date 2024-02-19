@@ -2257,8 +2257,6 @@ let number_strings_array = test_string |> String.split_on_char '\n'
 
 let numbers_array = Myutils.split_list int_of_string "" number_strings_array
 
-let sum = List.fold_left (+) 0
-
 let max = List.fold_left (fun acc elem -> if elem > acc then elem else acc) min_int
 
 let min lst =
@@ -2270,7 +2268,7 @@ let min lst =
       else minimum (cur_index + 1) min_and_index t in
   minimum 0 (max_int, -1) lst
 
-let sums_array = List.map sum numbers_array;;
+let sums_array = List.map Myutils.sum numbers_array;;
 let max_numbers = List.fold_left (
   fun acc x -> match acc with
   | (first_number, second_number, third_number) ->
