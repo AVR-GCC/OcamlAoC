@@ -198,9 +198,7 @@ let print_forest () = print_newline (); map_2d forest (fun _ _ v -> print_int v)
 
 let count_zeros () = List.mapi (fun i row -> List.mapi (fun j _ -> if get_from_map (i, j) = 0 then 1 else 0) row) forest |> List.flatten |> List.fold_left (+) 0
 
-let get_max_int lst = List.fold_left (fun acc x -> if x > acc then x else acc) 0 lst
-
-let get_top_view () = List.mapi (fun i row -> List.mapi (fun j _ -> get_from_scenic_scores (i, j)) row) forest |> List.flatten |> get_max_int
+let get_top_view () = List.mapi (fun i row -> List.mapi (fun j _ -> get_from_scenic_scores (i, j)) row) forest |> List.flatten |> Myutils.max_list
 
 let count_visible_trees () = List.length forest * List.length (List.hd forest) - count_zeros ()
 
