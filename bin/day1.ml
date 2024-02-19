@@ -2253,9 +2253,10 @@ let test_string = "10130
 4980
 6660"
 
+open Myutils
 let number_strings_array = test_string |> String.split_on_char '\n'
 
-let numbers_array = Myutils.split_list int_of_string "" number_strings_array
+let numbers_array = split_list int_of_string "" number_strings_array
 
 let min lst =
   let rec minimum cur_index min_and_index remainder = match remainder with
@@ -2266,7 +2267,7 @@ let min lst =
       else minimum (cur_index + 1) min_and_index t in
   minimum 0 (max_int, -1) lst
 
-let sums_array = List.map Myutils.sum numbers_array;;
+let sums_array = List.map sum numbers_array;;
 let max_numbers = List.fold_left (
   fun acc x -> match acc with
   | (first_number, second_number, third_number) ->
@@ -2283,7 +2284,7 @@ let max_numbers = List.fold_left (
 let run () = match (max_numbers sums_array) with
 | (number_one, number_two, number_three) ->
   print_string "\nThe elf carrying the most calories was carrying a total of ";
-  print_int @@ Myutils.max_list [number_one; number_two; number_three];
+  print_int @@ max_list [number_one; number_two; number_three];
   print_string " calories\nThe top three were carrying ";
   print_int number_one;
   print_string ", ";

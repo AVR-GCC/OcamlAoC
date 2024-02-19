@@ -2501,6 +2501,7 @@ C Y"
 
 let split_lines str = str |> String.split_on_char '\n'
 
+open Myutils
 let lines = split_lines test_string;;
 let line_to_game_wrong line = let tuple_to_result = function 
   | (a, 'X') -> 1 + (match a with
@@ -2536,7 +2537,7 @@ let game_results_wrong = List.map line_to_game_wrong lines;;
 let game_results = List.map line_to_game lines
 
 let run () = print_string "\nThe result given my original interpretation is: ";
-print_int (Myutils.sum game_results_wrong);
+print_int (sum game_results_wrong);
 print_string "\nThe result given the correct interpretation is: ";
-print_int (Myutils.sum game_results);
+print_int (sum game_results);
 print_string "\n";;

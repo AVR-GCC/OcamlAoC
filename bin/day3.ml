@@ -299,6 +299,7 @@ DLzSMtDLtzmmlDlMlMDbcrcTDqFvVvVqqTbD
 dnZshHpZRChgnszRwRZCpTqqTcwVqFcrVqcBVPqVTr
 snRRRdJsZgphCWlWtmJSjWWzjt"
 
+open Myutils
 module SS = Set.Make(Char)
 
 let string_to_set str =
@@ -323,7 +324,7 @@ let items = List.map rucksack_to_item lines
 
 let priorities = List.map item_to_priority items
 
-let priorities_sum = Myutils.sum priorities
+let priorities_sum = sum priorities
 
 let triplet_to_item triplet = match triplet with
   | (sack1, sack2, sack3) ->
@@ -337,7 +338,7 @@ let rec lines_to_badges badges lns = match lns with
 
 let badges = List.map item_to_priority (lines_to_badges [] lines)
 
-let badges_sum = Myutils.sum badges
+let badges_sum = sum badges
 
 let run () =
 print_string "\nThe sum of the priorities of the items in the rucksacks: ";

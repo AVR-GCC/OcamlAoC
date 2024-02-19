@@ -2001,6 +2001,8 @@ D 13"
 
 let lines = String.split_on_char '\n' test_string
 
+open Myutils
+
 let do_move (x, y) (dx, dy) =
   let x = x + dx in
   let y = y + dy in
@@ -2067,11 +2069,11 @@ let print_grid positions_set = let maxx, maxy, minx, miny = maxs_and_mins tale_p
 let run () =
   print_newline ();
   print_endline "Head positions:";
-  Myutils.printlist (Myutils.print_tuple print_int) (head_positions);
+  printlist (print_tuple print_int) (head_positions);
   print_newline ();
   print_newline ();
   print_endline "Tale positions list:";
-  Myutils.printlist (Myutils.print_tuple print_int) (tale_positions);
+  printlist (print_tuple print_int) (tale_positions);
   print_newline ();
   print_newline ();
   print_endline "Tale positions map:";
@@ -2083,7 +2085,7 @@ let run () =
   print_newline ();
   print_newline ();
   print_endline "Ninth link positions list:";
-  Myutils.printlist (Myutils.print_tuple print_int) (ninth_link_positions);
+  printlist (print_tuple print_int) (ninth_link_positions);
   print_newline ();
   print_newline ();
   print_endline "Ninth link positions map:";

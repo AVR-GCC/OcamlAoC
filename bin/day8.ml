@@ -98,9 +98,11 @@ let test_string = "2022100103103021213222104232012200003140242424322114254344222
 001010111333021232114033432123014243143421131445211232544521554534542030434313341020033312233321020
 110102200233103010320200140144034422131352541143533213514525422131220112004103004000011012120121220"
 
+open Myutils
+
 let lines = String.split_on_char '\n' test_string
 
-let forest_strs = List.map Myutils.explode lines
+let forest_strs = List.map explode lines
 
 let forest = List.map (List.map int_of_string) forest_strs
 
@@ -192,13 +194,13 @@ let bottom_to_top () = do_direction reversed_rotated_im tserof_detator
 
 let print_map () = print_newline (); map_2d forest (fun i j _ -> print_int (get_from_map (i, j))); print_newline ()
 let print_scenic_scores () = print_newline (); map_2d forest (fun i j _ -> print_int (get_from_scenic_scores (i, j)); print_string " "); print_newline ()
-let print_views () = print_newline (); map_2d forest (fun i j _ -> Myutils.print_tuple print_int (i, j); print_string " -> "; Myutils.printlist (Myutils.printlist print_int) (get_from_views(i, j)); print_newline()); print_newline ()
+let print_views () = print_newline (); map_2d forest (fun i j _ -> print_tuple print_int (i, j); print_string " -> "; printlist (printlist print_int) (get_from_views(i, j)); print_newline()); print_newline ()
 
 let print_forest () = print_newline (); map_2d forest (fun _ _ v -> print_int v); print_newline ()
 
 let count_zeros () = List.mapi (fun i row -> List.mapi (fun j _ -> if get_from_map (i, j) = 0 then 1 else 0) row) forest |> List.flatten |> List.fold_left (+) 0
 
-let get_top_view () = List.mapi (fun i row -> List.mapi (fun j _ -> get_from_scenic_scores (i, j)) row) forest |> List.flatten |> Myutils.max_list
+let get_top_view () = List.mapi (fun i row -> List.mapi (fun j _ -> get_from_scenic_scores (i, j)) row) forest |> List.flatten |> max_list
 
 let count_visible_trees () = List.length forest * List.length (List.hd forest) - count_zeros ()
 

@@ -56,7 +56,9 @@ Monkey 7:
 
 let lines = String.split_on_char '\n' test_string
 
-let monkeys_string_lists = List.rev @@ List.map List.rev @@ List.map (List.map String.trim) @@ Myutils.split_list (fun x -> x) "" lines
+open Myutils
+
+let monkeys_string_lists = List.rev @@ List.map List.rev @@ List.map (List.map String.trim) @@ split_list (fun x -> x) "" lines
 
 type monkey = {
   operation: int -> int;
@@ -177,7 +179,7 @@ let print_full_round i =
   print_endline ("After round " ^ (string_of_int i) ^ " the monkeys are holding items with these worry levels:");
   Array.iteri (fun j monkey_items -> 
     print_string ("Monkey " ^ (string_of_int j) ^ ": ");
-    Myutils.printlist print_int (List.rev monkey_items); print_newline ()) items_list.cur
+    printlist print_int (List.rev monkey_items); print_newline ()) items_list.cur
 
 let do_full_round total_mod j = 
   List.iteri (fun i monkey -> do_single_monkey_round total_mod i monkey) monkey_list.cur; print_full_round j
@@ -198,7 +200,7 @@ let two_max_items_of_array arr =
 let get_max_int lst = List.fold_left (fun acc x -> if x > acc then x else acc) 0 lst
 let run () =
   print_newline ();
-  Myutils.printlist (Myutils.printlist print_string) monkeys_string_lists;
+  printlist (printlist print_string) monkeys_string_lists;
   print_newline ();
   init_monkeys monkeys_string_lists;
   print_newline ();
@@ -213,7 +215,7 @@ let run () =
   print_newline ();
   print_endline "Max two active monkeys:";
   let top_monkeys = two_max_items_of_array items_inspected.cur in
-  Myutils.print_tuple print_int top_monkeys;
+  print_tuple print_int top_monkeys;
   print_newline ();
   print_newline ();
   print_endline "Monkey business:";

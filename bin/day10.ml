@@ -145,6 +145,8 @@ noop"
 
 let lines = String.split_on_char '\n' test_string
 
+open Myutils
+
 let do_line line (prev_x, cycle) = let parts = String.split_on_char ' ' line in
   match parts with
   | "addx" :: n :: [] -> (prev_x + int_of_string n, cycle + 2)
@@ -171,23 +173,23 @@ let run () =
   print_newline ();
   print_newline ();
   print_endline "Machine states:";
-  Myutils.printlist (Myutils.print_tuple print_int) machine_states;
+  printlist (print_tuple print_int) machine_states;
   print_newline ();
   print_newline ();
   print_endline "States during selected cycles:";
-  Myutils.printlist (Myutils.print_tuple print_int) selected_states;
+  printlist (print_tuple print_int) selected_states;
   print_newline ();
   print_newline ();
   print_endline "Signal strengths:";
-  Myutils.printlist print_int signal_strengths;
+  printlist print_int signal_strengths;
   print_newline ();
   print_newline ();
   print_endline "Sum of signal strengths:";
-  print_int (Myutils.sum signal_strengths);
+  print_int (sum signal_strengths);
   print_newline ();
   print_newline ();
   print_endline "All states to 240:";
-  Myutils.printlist (Myutils.print_tuple print_int) all_states_to_240;
+  printlist (print_tuple print_int) all_states_to_240;
   print_newline ();
   print_newline ();
   print_endline "CRT:";
