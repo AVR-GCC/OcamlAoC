@@ -533,10 +533,8 @@ let stacks_strings = match stacks_and_numbers with
   | _::tl -> tl
   | [] -> []
 
-let explode str = List.rev (String.fold_left (fun acc elem -> (String.make 1 elem)::acc) [] str)
-
 let str_to_crate_level_list str =
-    let exploded = explode str in
+    let exploded = Myutils.explode str in
     let rec triplets acc list = match list with
       | _::b::_::_::tl -> triplets (b::acc) tl
       | _::b::_::[] -> b::acc

@@ -100,7 +100,7 @@ let test_string = "2022100103103021213222104232012200003140242424322114254344222
 
 let lines = String.split_on_char '\n' test_string
 
-let forest_strs = List.map Day5.explode lines
+let forest_strs = List.map Myutils.explode lines
 
 let forest = List.map (List.map int_of_string) forest_strs
 
