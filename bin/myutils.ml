@@ -40,3 +40,16 @@ let read_file filename =
   let result = read_lines [] in
   close_in in_channel;
   result
+
+let split_on_chars str chars = let rec split_on_chars' list_acc str_acc i = if i = String.length str then List.rev (str_acc::list_acc) else
+  match str.[i] with
+  | c when List.mem c chars -> split_on_chars' (str_acc::list_acc) "" (i+1)
+  | c -> split_on_chars' list_acc (str_acc ^ Char.escaped c) (i+1) in
+  split_on_chars' [] "" 0
+
+let add_to_char c i = Char.chr (Char.code c + i)
+
+let fold_lefti f acc lst = let rec fold_lefti' acc lst i = match lst with
+  | [] -> acc
+  | h::t -> fold_lefti' (f acc h i) t (i + 1) in
+  fold_lefti' acc lst 0
