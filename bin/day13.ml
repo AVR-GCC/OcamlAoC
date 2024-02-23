@@ -47,6 +47,12 @@ let rec compare_sides (left, right) = match left, right with
   | Int l, Sides r -> compare_sides (Sides [Int l], Sides r)
   | Sides (lh::lt), Sides (rl::rt) -> let comp = compare_sides (lh, rl) in if comp = 0 then compare_sides (Sides lt, Sides rt) else comp
 
+let rec is_side_same (left, right) = match left, right with
+  | Sides l, Sides r -> (try List.for_all2 (fun a b -> is_side_same (a, b)) l r with _ -> false)
+  | Int l, Int r -> l = r
+  | Empty _, Empty _ -> true
+  | _ -> false
+
 let run () =  print_newline ();
   let replaced_commas = List.map (fun s -> replace_commas_according_to_bracket_level s) lines in
   let parsed_sides = List.map (fun s -> parse_side s 'B') replaced_commas in
@@ -67,4 +73,21 @@ let run () =  print_newline ();
   print_newline ();
   print_endline "sum:";
   print_int (sum (List.map (fun i -> i + 1) right_order_indecies));
+  print_newline ();
+  print_newline ();
+  let no_empty_sides = List.filter (fun s -> match s with | Empty _ -> false | _ -> true) parsed_sides in
+  let div1 = Sides [Sides [Int 2]] in
+  let div2 = Sides [Sides [Int 6]] in
+  let sorted_sides = List.rev @@ my_merge_sort compare_sides (div1::div2::no_empty_sides) in
+  print_endline "sorted sides:";
+  printlist print_side sorted_sides;
+  print_newline ();
+  print_newline ();
+  let divider_indecies = find_indecies (fun v -> is_side_same (v, div1) || is_side_same (v, div2)) sorted_sides in
+  print_endline "divider indecies:";
+  printlist print_int divider_indecies;
+  print_newline ();
+  print_newline ();
+  print_endline "with product:";
+  print_int (List.fold_left ( * ) 1 (List.map (fun i -> i + 1) divider_indecies));
   print_newline ();;
