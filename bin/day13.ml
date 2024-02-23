@@ -5,9 +5,9 @@ let lines = read_file "./inputs/day13.txt"
 type side = Int of int | Empty of int list | Sides of side list
 
 let rec print_side = function
-  | Empty _ -> print_string "Empty"
-  | Int i -> print_string "Int("; print_int i; print_string ")"
-  | Sides l -> print_string "Sides("; printlist print_side l; print_string ")"
+  | Empty _ -> ()
+  | Int i -> print_int i
+  | Sides l -> printlist print_side l
 
 let rec organize_pairs = function
   | [] -> []
