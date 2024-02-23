@@ -60,11 +60,11 @@ let run () =  print_newline ();
   printlist print_int results;
   print_newline ();
   print_newline ();
-  let right_order_indecies = fold_lefti (fun acc v i -> if v > 0 then (i + 1)::acc else acc) [] results in
+  let right_order_indecies = find_indecies (fun v -> v > 0) results in
   print_endline "right order indecies:";
   printlist print_int right_order_indecies;
   print_newline ();
   print_newline ();
   print_endline "sum:";
-  print_int (sum right_order_indecies);
+  print_int (sum (List.map (fun i -> i + 1) right_order_indecies));
   print_newline ();;

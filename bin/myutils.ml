@@ -69,3 +69,5 @@ let my_merge_sort cmp lst = let rec merge_two_lists lst1 lst2 = match lst1, lst2
   | [x] -> x
   | l -> do_all_runs (do_one_run l) in
   do_all_runs (List.map (fun x -> [x]) lst)
+
+let find_indecies cond = fold_lefti (fun acc v i -> if cond v then i::acc else acc) []
