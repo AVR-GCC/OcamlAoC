@@ -51,16 +51,20 @@ let run () =  print_newline ();
   let replaced_commas = List.map (fun s -> replace_commas_according_to_bracket_level s) lines in
   let parsed_sides = List.map (fun s -> parse_side s 'B') replaced_commas in
   let pairs = organize_pairs parsed_sides in
+  print_endline "Pairs:";
   printlist (print_tuple print_side) pairs;
   print_newline ();
   print_newline ();
   let results = List.map (fun (a, b) -> compare_tuple (a, b)) pairs in
+  print_endline "comparison results:";
   printlist print_int results;
   print_newline ();
   print_newline ();
   let right_order_indecies = fold_lefti (fun acc v i -> if v > 0 then (i + 1)::acc else acc) [] results in
+  print_endline "right order indecies:";
   printlist print_int right_order_indecies;
   print_newline ();
   print_newline ();
+  print_endline "sum:";
   print_int (sum right_order_indecies);
   print_newline ();;
