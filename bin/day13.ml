@@ -38,14 +38,14 @@ let rec parse_side str char = if str = "" then Empty [] else match str.[0] with
     Sides (List.map (fun s -> parse_side s (add_to_char char 1)) splitted)
   | _ -> Int (int_of_string str)
 
-let rec compare_tuple (left, right) = match left, right with
+let rec compare_sides (left, right) = match left, right with
   | Sides [], Sides [] | Empty _, Sides [] | Sides [], Empty _  | Empty _, Empty _ -> 0
   | Empty _, _ | Sides [], _ -> 1
   | _, Empty _ | _, Sides [] -> -1
   | Int l, Int r -> compare r l
-  | Sides l, Int r -> compare_tuple (Sides l, Sides [Int r])
-  | Int l, Sides r -> compare_tuple (Sides [Int l], Sides r)
-  | Sides (lh::lt), Sides (rl::rt) -> let comp = compare_tuple (lh, rl) in if comp = 0 then compare_tuple (Sides lt, Sides rt) else comp
+  | Sides l, Int r -> compare_sides (Sides l, Sides [Int r])
+  | Int l, Sides r -> compare_sides (Sides [Int l], Sides r)
+  | Sides (lh::lt), Sides (rl::rt) -> let comp = compare_sides (lh, rl) in if comp = 0 then compare_sides (Sides lt, Sides rt) else comp
 
 let run () =  print_newline ();
   let replaced_commas = List.map (fun s -> replace_commas_according_to_bracket_level s) lines in
@@ -55,7 +55,7 @@ let run () =  print_newline ();
   printlist (print_tuple print_side) pairs;
   print_newline ();
   print_newline ();
-  let results = List.map (fun (a, b) -> compare_tuple (a, b)) pairs in
+  let results = List.map (fun (a, b) -> compare_sides (a, b)) pairs in
   print_endline "comparison results:";
   printlist print_int results;
   print_newline ();
