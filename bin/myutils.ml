@@ -71,3 +71,25 @@ let my_merge_sort cmp lst = let rec merge_two_lists lst1 lst2 = match lst1, lst2
   do_all_runs (List.map (fun x -> [x]) lst)
 
 let find_indecies cond = fold_lefti (fun acc v i -> if cond v then i::acc else acc) []
+
+let rec is_sub_str_from_index str sub_str index = match sub_str with
+  | [] -> true
+  | h::t -> if index >= String.length str then false
+    else if h.[0] = str.[index] then is_sub_str_from_index str t (index + 1)
+    else false
+
+let split_on_string delim str = let delimiter = explode delim in
+  let rec split_on_string' list_acc str_acc i = if i = String.length str then List.rev (str_acc::list_acc) else
+  if is_sub_str_from_index str delimiter i then split_on_string' (str_acc::list_acc) "" (i + (String.length delim))
+  else split_on_string' list_acc (str_acc ^ Char.escaped str.[i]) (i + 1) in
+  split_on_string' [] "" 0
+
+let map_2d mat fn = ignore (List.mapi (fun i row ->
+  ignore (List.mapi (fun j v -> fn i j v ) row);
+  print_endline ""
+) mat)
+
+let map_2d_arr mat fn = ignore (Array.mapi (fun i row ->
+  ignore (Array.mapi (fun j v -> fn i j v ) row);
+  print_endline ""
+) mat)

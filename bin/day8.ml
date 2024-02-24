@@ -49,11 +49,6 @@ let get_from_scenic_scores key = if PairMap.mem key scenic_map.cur
   else 0
 let increment_map i j = PairMap.update (i, j) (fun x -> match x with | None -> Some 1 | Some y -> Some (y + 1)) forest_map.cur
 
-let map_2d mat fn = ignore (List.mapi (fun i row ->
-  ignore (List.mapi (fun j v -> fn i j v ) row);
-  print_endline ""
-) mat)
-
 let do_row fn row = let rec do_row' row' max j = match row' with
   | [] -> ()
   | t :: ts -> if t > max then (
