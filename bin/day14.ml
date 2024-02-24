@@ -55,9 +55,9 @@ let run () =  print_newline ();
   print_newline ();
   let (xs, ys) = List.split (List.flatten tuples) in
   let ((minx, maxx), (_, maxy)) = find_borders xs ys in
-  let width = maxy + 1 in
-  let height = maxx - minx + 1 in
-  let grid = Array.make_matrix width height '.' in
+  let height = maxy + 1 in
+  let width = maxx - minx + 1 in
+  let grid = Array.make_matrix height width '.' in
   print_newline ();
   print_newline ();
   print_int minx; print_string " "; print_int maxx; print_string " "; print_int maxy;
