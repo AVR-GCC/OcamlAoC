@@ -40,7 +40,7 @@ let drop_grain_one_step grid (x, y) =
 let rec drop_grain grid (x, y) =
   let (x', y') = drop_grain_one_step grid (x, y) in
   if y' = -1 then true else
-  if x = x' && y = y' then (grid.(y).(x) <- 'o'; false)
+  if x = x' && y = y' then (if grid.(y).(x) = '+' then true else (grid.(y).(x) <- 'o'; false))
   else drop_grain grid (x', y')
 
 let print_grid grid = map_2d_arr grid (fun i j _ -> print_char grid.(i).(j))
@@ -58,6 +58,7 @@ let run () =  print_newline ();
   let height = maxy + 1 in
   let width = maxx - minx + 1 in
   let grid = Array.make_matrix height width '.' in
+  grid.(0).(500 - minx) <- '+';
   print_newline ();
   print_newline ();
   print_int minx; print_string " "; print_int maxx; print_string " "; print_int maxy;
@@ -66,6 +67,20 @@ let run () =  print_newline ();
   print_newline ();
   print_newline ();
   ignore (List.map (fun tups -> draw_walls minx grid tups) tuples);
+  print_newline ();
+  print_grid grid;
+  print_newline ();
+  print_int (drop_all_grains (500 - minx, 0) grid 0);
+  print_newline ();
+  print_grid grid;
+  let maxy = maxy + 2 in
+  let minx = 500 - maxy in
+  let maxx = 500 + maxy in
+  let height = maxy + 1 in
+  let width = maxx - minx + 1 in
+  let grid = Array.make_matrix height width '.' in
+  ignore (List.map (fun tups -> draw_walls minx grid tups) (([(minx, maxy); (maxx, maxy)])::tuples));
+  grid.(0).(500 - minx) <- '+';
   print_newline ();
   print_grid grid;
   print_newline ();
