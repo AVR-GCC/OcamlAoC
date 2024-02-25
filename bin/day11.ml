@@ -93,14 +93,6 @@ let print_monkey start_number monkey =
   print_int @@ monkey.throw_to test_result;
   print_newline ()
 
-let print_mixed_tuple prnt1 prnt2 (x, y) = 
-  print_string "(";
-  prnt1 x;
-  print_string ", ";
-  prnt2 y;
-  print_string ")"
-  
-
 let monkey_inspect_item op monkey index item =
   let monkey_op_done = monkey.operation item in
   let monkey_bored_done = op monkey_op_done in

@@ -93,3 +93,18 @@ let map_2d_arr mat fn = ignore (Array.mapi (fun i row ->
   ignore (Array.mapi (fun j v -> fn i j v ) row);
   print_endline ""
 ) mat)
+
+let split_on_strings delims str = let delimiters = List.map explode delims in
+  let rec split_on_string' list_acc str_acc i = if i = String.length str then List.rev (str_acc::list_acc) else
+  match List.find_opt (fun delimiter -> is_sub_str_from_index str delimiter i) delimiters with
+  | Some (delim) -> split_on_string' (str_acc::list_acc) "" (i + (List.length delim))
+  | None -> split_on_string' list_acc (str_acc ^ Char.escaped str.[i]) (i + 1) in
+  split_on_string' [] "" 0
+
+let print_mixed_tuple prnt1 prnt2 (x, y) = 
+  print_string "(";
+  prnt1 x;
+  print_string ", ";
+  prnt2 y;
+  print_string ")"
+  
