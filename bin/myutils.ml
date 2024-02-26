@@ -107,4 +107,13 @@ let print_mixed_tuple prnt1 prnt2 (x, y) =
   print_string ", ";
   prnt2 y;
   print_string ")"
-  
+
+let clear_duplicates lst = let rec clear_duplicates' acc lst = match lst with
+  | [] -> List.rev acc
+  | h::t -> if List.mem h acc then clear_duplicates' acc t
+    else clear_duplicates' (h::acc) t in
+  clear_duplicates' [] lst
+
+let print_opt prnt opt = match opt with
+  | Some x -> prnt x
+  | None -> print_string "None"
