@@ -54,6 +54,13 @@ let count_clear_coordinates_for_y beacons start_x end_x y sensors_and_distances 
         (count_clear_coordinates_for_y' next_x (pos, next_count)) in
   count_clear_coordinates_for_y' start_x (None, 0)
 
+let sweep_area (start_x, start_y) (end_x, end_y) beacons sensors_and_distances =
+  let rec sweep_area' y =
+    if y > end_y then None else
+    let (potential_coordinate, _) = count_clear_coordinates_for_y beacons start_x end_x y sensors_and_distances in
+    if potential_coordinate = None then sweep_area' (y + 1) else potential_coordinate in
+  sweep_area' start_y
+
 let run () =  print_newline ();
   let sensor_and_distance_and_beacon = List.map process_line lines in
   let (sensor_and_distance, beacons_with_duplicates) = List.split sensor_and_distance_and_beacon in
@@ -83,4 +90,16 @@ let run () =  print_newline ();
   print_newline ();
   print_string "Clear spots in y="; print_int y; print_string ": ";
   print_int count;
+  print_newline ();
+  print_newline ();
+  let y = 4000000 in
+  match sweep_area (0, 0) (y, y) beacons sensor_and_distance with
+  | None -> print_endline "No potential point found"
+  | Some (final_x, final_y) ->
+    print_endline "Potential point:";
+    print_tuple print_int (final_x, final_y);
+    print_newline ();
+    print_newline ();
+    print_endline "Tuning frequency:";
+    print_int (final_x * y + final_y);
   print_newline ();;
