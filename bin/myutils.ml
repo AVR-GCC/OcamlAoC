@@ -108,6 +108,15 @@ let print_mixed_tuple prnt1 prnt2 (x, y) =
   prnt2 y;
   print_string ")"
 
+let print_mixed_triple prnt1 prnt2 prnt3 (x, y, z) = 
+  print_string "(";
+  prnt1 x;
+  print_string ", ";
+  prnt2 y;
+  print_string ", ";
+  prnt3 z;
+  print_string ")"
+
 let clear_duplicates lst = let rec clear_duplicates' acc lst = match lst with
   | [] -> List.rev acc
   | h::t -> if List.mem h acc then clear_duplicates' acc t
