@@ -126,3 +126,35 @@ let clear_duplicates lst = let rec clear_duplicates' acc lst = match lst with
 let print_opt prnt opt = match opt with
   | Some x -> prnt x
   | None -> print_string "None"
+
+type 'a node = {
+  id: string;
+  value: 'a;
+  mutable neighbors: 'a node list;
+}
+
+let build_graph tuples = let rec build_graph' processed_nodes tups = match tups with
+  | [] -> processed_nodes
+  | (id, value, neighbors)::t ->
+    let new_node = {id = id; value = value; neighbors = []} in
+    new_node.neighbors <- List.fold_left (
+      fun acc neighbor_id -> match List.find_opt (fun node -> node.id = neighbor_id) processed_nodes with
+      | Some neighbor -> neighbor.neighbors <- new_node::neighbor.neighbors; neighbor::acc
+      | None -> acc
+    ) [] neighbors;
+    build_graph' (new_node::processed_nodes) t in
+  build_graph' [] tuples
+
+let print_graph prnt graph =
+  let rec print_node indentation printed node =
+    if (List.length printed < 2 || not (node.id = (List.hd (List.tl printed)))) then (
+      print_string (String.make indentation ' ' ^ node.id);
+      if List.mem node.id printed then (print_endline " (cycle)"; printed)
+      else (
+        print_string " -";
+        prnt node.value;
+        print_endline "->";
+        List.fold_left (fun acc cur -> (print_node (indentation + 2) (node.id::printed@acc) cur)) [] node.neighbors
+      )
+    ) else printed in
+  ignore (print_node 0 [] graph)
