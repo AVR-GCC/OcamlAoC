@@ -145,16 +145,21 @@ let build_graph tuples = let rec build_graph' processed_nodes tups = match tups 
     build_graph' (new_node::processed_nodes) t in
   build_graph' [] tuples
 
+module StringSet = Set.Make(struct
+  type t = string
+  let compare = compare
+end)
+
 let print_graph prnt graph =
-  let rec print_node indentation printed node =
-    if (List.length printed < 2 || not (node.id = (List.hd (List.tl printed)))) then (
+  let rec print_node indentation tree printed node =
+    if (List.length tree < 2 || not (node.id = (List.hd (List.tl tree)))) then (
       print_string (String.make indentation ' ' ^ node.id);
-      if List.mem node.id printed then (print_endline " (cycle)"; printed)
+      if StringSet.mem node.id printed then (print_endline " (cycle)"; printed)
       else (
         print_string " -";
         prnt node.value;
         print_endline "->";
-        List.fold_left (fun acc cur -> (print_node (indentation + 2) (node.id::printed@acc) cur)) [] node.neighbors
+        List.fold_left (fun acc cur -> (print_node (indentation + 2) (node.id::tree) (StringSet.add node.id acc) cur)) printed node.neighbors
       )
     ) else printed in
-  ignore (print_node 0 [] graph)
+  ignore (print_node 0 [] StringSet.empty graph)
