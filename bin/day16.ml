@@ -9,7 +9,7 @@ type valve = {
 
 let total_minutes = 30
 
-let print_valve {flow_rate; best_visits} = ignore best_visits; print_string " { "; print_int flow_rate;(* print_string "; "; print_array print_int best_visits; *)print_string " } "
+let print_valve {flow_rate; best_visits} = ignore best_visits; print_string " { "; print_int flow_rate; print_string " } "
 
 let create_value_item flow_rate = {flow_rate = int_of_string flow_rate; best_visits = Array.make total_minutes (-1, "")}
 
