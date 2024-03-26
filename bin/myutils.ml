@@ -20,6 +20,8 @@ let sum = List.fold_left (+) 0
 
 let max_list = List.fold_left (fun acc elem -> max acc elem) min_int
 
+let max_list_by f minval list = List.fold_left (fun acc elem -> if (f acc) > (f elem) then acc else elem) minval list
+
 let print_tuple prnt tup = match tup with
   | (one, two) -> print_string "("; prnt one; print_string ", "; prnt two; print_string ")"
 
@@ -150,15 +152,24 @@ module StringSet = Set.Make(struct
   let compare = compare
 end)
 
+let find_node id node =
+  let rec find_node' visited current =
+    if StringSet.mem current.id visited then None else
+    if current.id = id then Some current else
+    let new_visited = StringSet.add current.id visited in
+    let neighbor_results = List.filter_map (find_node' new_visited) current.neighbors in
+    if List.length neighbor_results = 0 then None else Some (List.hd neighbor_results) in
+  find_node' StringSet.empty node
+
 let print_graph prnt graph =
   let rec print_node indentation tree printed node =
     if (List.length tree < 2 || not (node.id = (List.hd (List.tl tree)))) then (
       print_string (String.make indentation ' ' ^ node.id);
       if StringSet.mem node.id printed then (print_endline " (cycle)"; printed)
       else (
-        print_string " -";
+        print_string " - ";
         prnt node.value;
-        print_endline "->";
+        print_endline " ->";
         List.fold_left (fun acc cur -> (print_node (indentation + 2) (node.id::tree) (StringSet.add node.id acc) cur)) printed node.neighbors
       )
     ) else printed in
