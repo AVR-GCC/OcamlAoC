@@ -4,14 +4,13 @@ let lines = read_file "./inputs/day16real.txt"
 
 type valve = {
   flow_rate: int;
-  mutable best_visits: (int * string) array;
 }
 
 let total_minutes = 30
 
-let print_valve {flow_rate; best_visits} = ignore best_visits; print_string " { "; print_int flow_rate; print_string " } "
+let print_valve { flow_rate } = print_string " { "; print_int flow_rate; print_string " } "
 
-let create_value_item flow_rate = {flow_rate = int_of_string flow_rate; best_visits = Array.make total_minutes (-1, "")}
+let create_value_item flow_rate = { flow_rate = int_of_string flow_rate }
 
 let process_line line = line
 |> split_on_strings ["Valve "; " has flow rate="; "; tunnels lead to valves "; "; tunnel leads to valve "]
