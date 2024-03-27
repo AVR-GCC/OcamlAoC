@@ -180,9 +180,7 @@ let print_graph prnt graph =
       else (
         print_string " - ";
         prnt node.value;
-        print_string "|";
-        StringMap.iter (fun k v -> print_string (" " ^ k ^ ": " ^ (string_of_int v))) node.distance_map;
-        print_endline " | ->";
+        print_endline " ->";
         List.fold_left (fun acc cur -> (print_node (indentation + 2) (node.id::tree) (StringSet.add node.id acc) cur)) printed node.neighbors
       )
     ) else printed in

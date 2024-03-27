@@ -1,6 +1,6 @@
 open Myutils
 
-let lines = read_file "./inputs/day16test.txt"
+let lines = read_file "./inputs/day16real.txt"
 
 type valve = {
   flow_rate: int;
@@ -31,18 +31,21 @@ let map_valves base_node =
 let map_sum minutes distance_map map = StringMap.fold (fun k v acc -> match StringMap.find_opt k distance_map with None -> acc | Some dist -> (acc + ((minutes - dist - 1) * v))) map 0
 
 let traverse_tunnels total_minutes graph =
-  let rec traverse_tunnels' route remaining_valves minutes_left pressure_released valve =
-    let potential_pressure = map_sum minutes_left valve.distance_map remaining_valves in
-    if minutes_left = 0 || potential_pressure = 0 then (pressure_released, route) else
-    let (best_visit_total_pressure, _) = valve.value.best_visits.(minutes_left - 1) in
-    let total_pressure = pressure_released + potential_pressure in
-    if best_visit_total_pressure <= total_pressure then
-    (valve.value.best_visits.(minutes_left - 1) <- (total_pressure, route);
-    let open_this_valve = if valve.value.flow_rate = 0 || not (StringMap.mem valve.id remaining_valves) then (-1, valve.id ^ " valve open or zero") else traverse_tunnels' (route ^ valve.id ^ "^") (StringMap.remove valve.id remaining_valves) (minutes_left - 1) (pressure_released + valve.value.flow_rate * (minutes_left - 1)) valve in
-    let all_options = List.map (traverse_tunnels' (route ^ valve.id ^ "-") (if valve.value.flow_rate = 0 then StringMap.remove valve.id remaining_valves else remaining_valves) (minutes_left - 1) pressure_released) valve.neighbors in
+  let rec traverse_tunnels' route visited remaining_valves opened_valve minutes_left pressure_released valve =
+    let last_visit = match StringMap.find_opt valve.id visited with None -> -1 | Some prev_visit -> prev_visit in
+    if not opened_valve && last_visit >= pressure_released then (-1, valve.id ^ " revisit") else (
+    if minutes_left = 0 || StringMap.cardinal remaining_valves = 0 then (pressure_released, route) else (
+    let open_this_valve = if opened_valve || valve.value.flow_rate = 0 || not (StringMap.mem valve.id remaining_valves) then (-1, valve.id ^ " valve open or zero") else (
+      let new_pressure_released = pressure_released + valve.value.flow_rate * (minutes_left - 1) in
+      let new_visited = StringMap.update valve.id (fun _ -> Some new_pressure_released) visited in
+      let new_remaining_valves = StringMap.remove valve.id remaining_valves in
+      traverse_tunnels' (route ^ valve.id ^ "^") new_visited new_remaining_valves true (minutes_left - 1) new_pressure_released valve
+    ) in
+    let new_visited = StringMap.update valve.id (fun _ -> Some pressure_released) visited in
+    let all_options = List.map (traverse_tunnels' (route ^ valve.id ^ "-") new_visited (if valve.value.flow_rate = 0 then StringMap.remove valve.id remaining_valves else remaining_valves) false (minutes_left - 1) pressure_released) valve.neighbors in
     let (new_pressure_released, new_pressure_released_route) = max_list_by (fun (pr, _) -> pr) (-1, valve.id ^ " empty list") (open_this_valve::all_options) in
-    (new_pressure_released, new_pressure_released_route)) else (-1, valve.id ^ " revisit") in
-  traverse_tunnels' "=" (map_valves graph) total_minutes 0 graph
+    (new_pressure_released, new_pressure_released_route))) in
+  traverse_tunnels' "=" StringMap.empty (map_valves graph) false total_minutes 0 graph
 
 let run () = print_newline ();
   let valve_tuples = List.map process_line lines in
@@ -54,14 +57,11 @@ let run () = print_newline ();
   | None -> ()
   | Some base_node ->
   print_newline ();
-  update_distance_maps graph_nodes;
   print_graph print_valve base_node;
   print_newline ();
   print_mixed_tuple print_int print_string (traverse_tunnels total_minutes base_node);
   print_newline ();
-  print_newline ();
-  print_graph print_valve base_node;
-  prerr_newline ();;
+  print_newline ();;
 (*
 minute 1 
 no valves are open
