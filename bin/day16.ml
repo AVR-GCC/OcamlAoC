@@ -21,18 +21,28 @@ let process_line line = line
 
 let print_valve_tuple = print_mixed_triple print_string print_valve (printlist print_string)
 
-let traverse_tunnels total_valves total_minutes graph =
-  ignore total_valves;
-  let rec traverse_tunnels' route open_valves minutes_left pressure_released valve =
-    if minutes_left = 0 then (pressure_released, route) else
-    let (best_visit_pressure, _) = valve.value.best_visits.(minutes_left - 1) in
-    if best_visit_pressure <= pressure_released then
-    (valve.value.best_visits.(minutes_left - 1) <- (pressure_released, route);
-    let open_this_valve = if valve.value.flow_rate = 0 || StringSet.mem valve.id open_valves then (-1, valve.id ^ " valve open or zero") else traverse_tunnels' (route ^ valve.id ^ "^") (StringSet.add valve.id open_valves) (minutes_left - 1) (pressure_released + valve.value.flow_rate * (minutes_left - 1)) valve in
-    let all_options = List.map (traverse_tunnels' (route ^ valve.id ^ "-") (if valve.value.flow_rate = 0 then StringSet.add valve.id open_valves else open_valves) (minutes_left - 1) pressure_released) valve.neighbors in
+let map_valves base_node = 
+  let rec map_valves' map node =
+    if StringMap.mem node.id map then map else
+    let new_map = StringMap.add node.id node.value.flow_rate map in
+    List.fold_left map_valves' new_map node.neighbors in
+  map_valves' StringMap.empty base_node
+
+let map_sum minutes distance_map map = StringMap.fold (fun k v acc -> match StringMap.find_opt k distance_map with None -> acc | Some dist -> (acc + ((minutes - dist - 1) * v))) map 0
+
+let traverse_tunnels total_minutes graph =
+  let rec traverse_tunnels' route remaining_valves minutes_left pressure_released valve =
+    let potential_pressure = map_sum minutes_left valve.distance_map remaining_valves in
+    if minutes_left = 0 || potential_pressure = 0 then (pressure_released, route) else
+    let (best_visit_total_pressure, _) = valve.value.best_visits.(minutes_left - 1) in
+    let total_pressure = pressure_released + potential_pressure in
+    if best_visit_total_pressure <= total_pressure then
+    (valve.value.best_visits.(minutes_left - 1) <- (total_pressure, route);
+    let open_this_valve = if valve.value.flow_rate = 0 || not (StringMap.mem valve.id remaining_valves) then (-1, valve.id ^ " valve open or zero") else traverse_tunnels' (route ^ valve.id ^ "^") (StringMap.remove valve.id remaining_valves) (minutes_left - 1) (pressure_released + valve.value.flow_rate * (minutes_left - 1)) valve in
+    let all_options = List.map (traverse_tunnels' (route ^ valve.id ^ "-") (if valve.value.flow_rate = 0 then StringMap.remove valve.id remaining_valves else remaining_valves) (minutes_left - 1) pressure_released) valve.neighbors in
     let (new_pressure_released, new_pressure_released_route) = max_list_by (fun (pr, _) -> pr) (-1, valve.id ^ " empty list") (open_this_valve::all_options) in
     (new_pressure_released, new_pressure_released_route)) else (-1, valve.id ^ " revisit") in
-  traverse_tunnels' "=" StringSet.empty total_minutes 0 graph
+  traverse_tunnels' "=" (map_valves graph) total_minutes 0 graph
 
 let run () = print_newline ();
   let valve_tuples = List.map process_line lines in
@@ -44,9 +54,10 @@ let run () = print_newline ();
   | None -> ()
   | Some base_node ->
   print_newline ();
+  update_distance_maps graph_nodes;
   print_graph print_valve base_node;
   print_newline ();
-  print_mixed_tuple print_int print_string (traverse_tunnels (List.length graph_nodes) total_minutes base_node);
+  print_mixed_tuple print_int print_string (traverse_tunnels total_minutes base_node);
   print_newline ();
   print_newline ();
   print_graph print_valve base_node;
@@ -165,8 +176,9 @@ minute 30
 valves JJ and DD and HH and EE and BB and CC are open, releasing 81 pressure
 
 Mine:
-=30AA-29II-28JJ^27JJ567-26II567-25AA567-24DD567^23DD1027-22EE1027-21FF1027-20GG1027-19HH1027^18HH1423-17GG1423-16FF1423-15EE1423^14EE1465-13DD1465-12CC1465-11BB1465^10BB1595-9CC1595^8CC1611-
+=30 AA - 29 II - 28 JJ ^ 27 JJ 567 - 26 II 567 - 25 AA 567 - 24 DD 567 ^ 23 DD 1027 - 22 EE 1027 - 21 FF 1027 - 20 GG 1027 - 19 HH 1027 ^ 18 HH 1423 - 17 GG 1423 - 16 FF 1423 - 15 EE 1423 ^ 14 EE 1465 - 13 DD 1465 - 12 CC 1465 - 11 BB 1465 ^ 10 BB 1595 - 9 CC 1595 ^ 8 CC 1611 -
 
 Correct:
-=30AA-29DD^28DD-27CC560-26BB560^25BB885-24AA885-23II885 -22JJ885 ^21JJ1326-20II1326-19AA1326-18DD1326-17EE1326-16FF1326-15GG1326-14HH1326^13HH1612-12GG1612-11FF1612-10EE1612^9EE1639-8DD1639-7CC1639^6CC1651-
+=30 AA - 29 DD ^ 28 DD - 27 CC 560 - 26 BB 560 ^ 25 BB 885 - 24 AA 885 - 23 II 885  - 22 JJ 885  ^ 21 JJ 1326 - 20 II 1326 - 19 AA 1326 - 18 DD 1326 - 17 EE 1326 - 16 FF 1326 - 15 GG 1326 - 14 HH 1326 ^ 13 HH 1612 - 12 GG 1612 - 11 FF 1612 - 10 EE 1612 ^ 9 EE 1639 - 8 DD 1639 - 7 CC 1639 ^ 6 CC 1651 -
+=AA-DD^DD-CC-BB^BB-AA-II-JJ^JJ-II-AA-DD-EE-FF-GG-HH^HH-GG-FF-EE^EE-DD-CC^CC-
    *)

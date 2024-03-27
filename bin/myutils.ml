@@ -129,16 +129,19 @@ let print_opt prnt opt = match opt with
   | Some x -> prnt x
   | None -> print_string "None"
 
+module StringMap = Map.Make(String)
+
 type 'a node = {
   id: string;
   value: 'a;
   mutable neighbors: 'a node list;
+  mutable distance_map: int StringMap.t;
 }
 
 let build_graph tuples = let rec build_graph' processed_nodes tups = match tups with
   | [] -> processed_nodes
   | (id, value, neighbors)::t ->
-    let new_node = {id = id; value = value; neighbors = []} in
+    let new_node = {id = id; value = value; neighbors = []; distance_map = StringMap.empty} in
     new_node.neighbors <- List.fold_left (
       fun acc neighbor_id -> match List.find_opt (fun node -> node.id = neighbor_id) processed_nodes with
       | Some neighbor -> neighbor.neighbors <- new_node::neighbor.neighbors; neighbor::acc
@@ -146,6 +149,14 @@ let build_graph tuples = let rec build_graph' processed_nodes tups = match tups 
     ) [] neighbors;
     build_graph' (new_node::processed_nodes) t in
   build_graph' [] tuples
+
+let update_distance_maps nodes = let rec update_distance_maps_for_node distance origin node =
+  if (distance = 0) then (List.iter (update_distance_maps_for_node 1 node.id) node.neighbors) else
+  if not (origin = node.id) && (not (StringMap.mem origin node.distance_map) || ((StringMap.find origin node.distance_map) > distance)) then (
+    node.distance_map <- StringMap.update origin (fun _ -> Some distance) node.distance_map;
+    List.iter (update_distance_maps_for_node (distance + 1) origin) node.neighbors
+  ) in
+  List.iter (fun node -> update_distance_maps_for_node 0 node.id node) nodes
 
 module StringSet = Set.Make(struct
   type t = string
@@ -169,7 +180,9 @@ let print_graph prnt graph =
       else (
         print_string " - ";
         prnt node.value;
-        print_endline " ->";
+        print_string "|";
+        StringMap.iter (fun k v -> print_string (" " ^ k ^ ": " ^ (string_of_int v))) node.distance_map;
+        print_endline " | ->";
         List.fold_left (fun acc cur -> (print_node (indentation + 2) (node.id::tree) (StringSet.add node.id acc) cur)) printed node.neighbors
       )
     ) else printed in
