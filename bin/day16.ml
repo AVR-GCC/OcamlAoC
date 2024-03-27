@@ -6,8 +6,6 @@ type valve = {
   flow_rate: int;
 }
 
-let total_minutes = 30
-
 let print_valve { flow_rate } = print_string " { "; print_int flow_rate; print_string " } "
 
 let create_value_item flow_rate = { flow_rate = int_of_string flow_rate }
@@ -58,7 +56,7 @@ let run () = print_newline ();
   print_newline ();
   print_graph print_valve base_node;
   print_newline ();
-  print_mixed_tuple print_int print_string (traverse_tunnels total_minutes base_node);
+  print_mixed_tuple print_int print_string (traverse_tunnels 30 base_node);
   print_newline ();
   print_newline ();;
 (*
