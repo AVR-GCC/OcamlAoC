@@ -45,18 +45,21 @@ let traverse_tunnels total_minutes graph =
   let num_flow_valves = count_flow_valves graph in
   let rec traverse_tunnels' minutes_left {visited; opened; opened_valve; pressure_released; valve} =
     let last_visit = match StringMap.find_opt valve.id visited with None -> -1 | Some prev_visit -> prev_visit in
-    if not opened_valve && last_visit >= pressure_released then -1 else (
-    if minutes_left = 0 || StringSet.cardinal opened = num_flow_valves then pressure_released else (
-    let open_this_valve = if opened_valve || valve.value.flow_rate = 0 || (StringSet.mem valve.id opened) then -1 else (
+    let revisit = not opened_valve && last_visit >= pressure_released in
+    if revisit then -1 else
+    let finished = minutes_left = 0 || StringSet.cardinal opened = num_flow_valves in
+    if finished then pressure_released else
+    let try_open_this_valve = opened_valve || valve.value.flow_rate = 0 || StringSet.mem valve.id opened in
+    let open_this_valve = if try_open_this_valve then -1 else (
       let new_pressure_released = pressure_released + valve.value.flow_rate * (minutes_left - 1) in
       let new_visited = StringMap.update valve.id (fun _ -> Some new_pressure_released) visited in
       let new_opened = StringSet.add valve.id opened in
       traverse_tunnels' (minutes_left - 1) {visited = new_visited; opened = new_opened; opened_valve = true; pressure_released = new_pressure_released; valve = valve}
     ) in
     let new_visited = StringMap.update valve.id (fun _ -> Some pressure_released) visited in
-    let all_options = List.map (fun valve -> traverse_tunnels' (minutes_left - 1) {visited = new_visited; opened = opened; opened_valve = false; pressure_released = pressure_released; valve}) valve.neighbors in
+    let all_options = List.map (fun valve -> traverse_tunnels' (minutes_left - 1) {visited = new_visited; opened = opened; opened_valve = false; pressure_released = pressure_released; valve = valve}) valve.neighbors in
     let new_pressure_released = max_list (open_this_valve::all_options) in
-    new_pressure_released)) in
+    new_pressure_released in
   traverse_tunnels' total_minutes {visited = StringMap.empty; opened = StringSet.empty; opened_valve = false; pressure_released = 0; valve = graph}
 
 let run () = print_newline ();
