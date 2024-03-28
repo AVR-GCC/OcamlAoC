@@ -36,7 +36,8 @@ let count_flow_valves base_node =
 
 let traverse_tunnels total_minutes graph =
   let num_flow_valves = count_flow_valves graph in
-  let rec traverse_tunnels' minutes_left {visited; opened; opened_valve; pressure_released; valve} =
+  let rec traverse_tunnels' minutes_left visit =
+    let {visited; opened; opened_valve; pressure_released; valve} = visit in
     let last_visit = match StringMap.find_opt valve.id visited with None -> -1 | Some prev_visit -> prev_visit in
     let revisit = not opened_valve && last_visit >= pressure_released in
     if revisit then -1 else
