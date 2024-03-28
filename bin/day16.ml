@@ -14,6 +14,14 @@ type visit = {
   valve: valve node;
 }
 
+type double_visit = {
+  visited: int StringMap.t;
+  opened: StringSet.t;
+  opened_valve: bool * bool;
+  pressure_released: int;
+  valves: valve node * valve node;
+}
+
 let print_valve { flow_rate } = print_string " { "; print_int flow_rate; print_string " } "
 
 let create_value_item flow_rate = { flow_rate = int_of_string flow_rate }
@@ -25,6 +33,26 @@ let process_line line = line
   | _ -> failwith "Malformed line"
 
 let print_valve_tuple = print_mixed_triple print_string print_valve (printlist print_string)
+
+let split_double_visit {visited; opened; opened_valve; pressure_released; valves} = 
+  let (opened_valve1, opened_valve2) = opened_valve in
+  let (valve1, valve2) = valves in
+  let visit1 = {visited = visited; opened = opened; opened_valve = opened_valve1; pressure_released = pressure_released; valve = valve1} in
+  let visit2 = {visited = visited; opened = opened; opened_valve = opened_valve2; pressure_released = pressure_released; valve = valve2} in
+  (visit1, visit2)
+
+let merge_visits original_pressure_released {visited = visited1; opened = opened1; opened_valve = opened_valve1; pressure_released = pressure_released1; valve = valve1}
+    {visited = visited2; opened = opened2; opened_valve = opened_valve2; pressure_released = pressure_released2; valve = valve2} =
+  let new_visited = StringMap.merge (fun _ v1 v2 -> match v1, v2 with
+    | None, None -> None
+    | Some x, None -> Some x
+    | None, Some y -> Some y
+    | Some x, Some y -> Some (max x y)) visited1 visited2 in
+  let new_opened = StringSet.union opened1 opened2 in
+  let new_opened_valve = (opened_valve1, opened_valve2) in
+  let new_pressure_released = pressure_released1 + pressure_released2 - original_pressure_released in
+  let new_valves = (valve1, valve2) in
+  {visited = new_visited; opened = new_opened; opened_valve = new_opened_valve; pressure_released = new_pressure_released; valves = new_valves}
 
 let count_flow_valves base_node = 
   let rec count_flow_valves' visited count node =
@@ -61,6 +89,33 @@ let traverse_tunnels total_minutes graph =
     max_list all_options in
   traverse_tunnels' total_minutes {visited = StringMap.empty; opened = StringSet.empty; opened_valve = false; pressure_released = 0; valve = graph}
 
+let traverse_tunnels_double total_minutes graph =
+  let num_flow_valves = count_flow_valves graph in
+  let rec traverse_tunnels' minutes_left visit =
+    let {visited; opened; opened_valve; pressure_released; valves} = visit in
+    let (opened_valve1, opened_valve2) = opened_valve in
+    let (valve1, valve2) = valves in
+    let last_visit1 = match StringMap.find_opt valve1.id visited with None -> -1 | Some prev_visit -> prev_visit in
+    let last_visit2 = match StringMap.find_opt valve2.id visited with None -> -1 | Some prev_visit -> prev_visit in
+    let revisit1 = not opened_valve1 && last_visit1 >= pressure_released in
+    let revisit2 = not opened_valve2 && last_visit2 >= pressure_released in
+    if revisit1 || revisit2 then -1 else
+    let finished = minutes_left = 0 || StringSet.cardinal opened = num_flow_valves in
+    if finished then pressure_released else
+    let (visit1, visit2) = split_double_visit visit in
+    let move_inputs1 = List.map (move_to_valve visit1) valve1.neighbors in
+    let move_inputs2 = List.map (move_to_valve visit2) valve2.neighbors in
+    let dont_try_open_this_valve1 = opened_valve1 || valve1.value.flow_rate = 0 || StringSet.mem valve1.id opened in
+    let dont_try_open_this_valve2 = opened_valve2 || valve2.value.flow_rate = 0 || StringSet.mem valve2.id opened in
+    let minutes = minutes_left - 1 in
+    let trying_to_open_same_valve = valve1.id = valve2.id && not dont_try_open_this_valve1 && not dont_try_open_this_valve2 in
+    let all_inputs1 = if dont_try_open_this_valve1 then move_inputs1 else (open_valve minutes visit1)::move_inputs1 in
+    let all_inputs2 = if dont_try_open_this_valve2 || trying_to_open_same_valve then move_inputs2 else (open_valve minutes visit2)::move_inputs2 in
+    let all_inputs = cartesian_product (merge_visits pressure_released) all_inputs1 all_inputs2 in
+    let all_options = List.map (traverse_tunnels' minutes) all_inputs in
+    max_list all_options in
+  traverse_tunnels' total_minutes {visited = StringMap.empty; opened = StringSet.empty; opened_valve = (false, false); pressure_released = 0; valves = (graph, graph)}
+
 let run () = print_newline ();
   let valve_tuples = List.map process_line lines in
   printlist print_valve_tuple valve_tuples;
@@ -74,6 +129,9 @@ let run () = print_newline ();
   print_graph print_valve base_node;
   print_newline ();
   print_int (traverse_tunnels 30 base_node);
+  print_newline ();
+  print_newline ();
+  print_int (traverse_tunnels_double 26 base_node);
   print_newline ();
   print_newline ();;
 (*

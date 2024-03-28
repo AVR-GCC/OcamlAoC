@@ -185,3 +185,8 @@ let print_graph prnt graph =
       )
     ) else printed in
   ignore (print_node 0 [] StringSet.empty graph)
+
+let cartesian_product f list1 list2 =
+  List.concat_map (fun elem1 ->
+    List.map (fun elem2 -> f elem1 elem2) list2
+  ) list1
