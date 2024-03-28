@@ -26,13 +26,6 @@ let process_line line = line
 
 let print_valve_tuple = print_mixed_triple print_string print_valve (printlist print_string)
 
-let map_valves base_node = 
-  let rec map_valves' map node =
-    if StringMap.mem node.id map then map else
-    let new_map = StringMap.add node.id node.value.flow_rate map in
-    List.fold_left map_valves' new_map node.neighbors in
-  map_valves' StringMap.empty base_node
-
 let count_flow_valves base_node = 
   let rec count_flow_valves' visited count node =
     if StringSet.mem node.id visited then count else
