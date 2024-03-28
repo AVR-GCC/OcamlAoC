@@ -53,12 +53,12 @@ let traverse_tunnels total_minutes graph =
     if revisit then -1 else
     let finished = minutes_left = 0 || StringSet.cardinal opened = num_flow_valves in
     if finished then pressure_released else
-    let try_open_this_valve = opened_valve || valve.value.flow_rate = 0 || StringSet.mem valve.id opened in
+    let dont_try_open_this_valve = opened_valve || valve.value.flow_rate = 0 || StringSet.mem valve.id opened in
     let minutes = minutes_left - 1 in
-    let open_this_valve = if try_open_this_valve then -1 else traverse_tunnels' minutes (open_valve minutes visit) in
-    let all_options = List.map (fun valve -> traverse_tunnels' minutes (move_to_valve visit valve)) valve.neighbors in
-    let new_pressure_released = max_list (open_this_valve::all_options) in
-    new_pressure_released in
+    let move_inputs = List.map (move_to_valve visit) valve.neighbors in
+    let all_inputs = if dont_try_open_this_valve then move_inputs else (open_valve minutes visit)::move_inputs in
+    let all_options = List.map (traverse_tunnels' minutes) all_inputs in
+    max_list all_options in
   traverse_tunnels' total_minutes {visited = StringMap.empty; opened = StringSet.empty; opened_valve = false; pressure_released = 0; valve = graph}
 
 let run () = print_newline ();
