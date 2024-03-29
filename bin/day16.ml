@@ -72,8 +72,7 @@ let move_to_valve {visited; opened; pressure_released; valve; _} new_valve =
   let new_visited = StringMap.update valve.id (fun _ -> Some pressure_released) visited in
   {visited = new_visited; opened = opened; opened_valve = false; pressure_released = pressure_released; valve = new_valve}
 
-let traverse_tunnels total_minutes graph =
-  let num_flow_valves = count_flow_valves graph in
+let traverse_tunnels total_minutes num_flow_valves start_visit =
   let rec traverse_tunnels' minutes_left visit =
     let {visited; opened; opened_valve; pressure_released; valve} = visit in
     let last_visit = match StringMap.find_opt valve.id visited with None -> -1 | Some prev_visit -> prev_visit in
@@ -87,7 +86,7 @@ let traverse_tunnels total_minutes graph =
     let all_inputs = if dont_try_open_this_valve then move_inputs else (open_valve minutes visit)::move_inputs in
     let all_options = List.map (traverse_tunnels' minutes) all_inputs in
     max_list all_options in
-  traverse_tunnels' total_minutes {visited = StringMap.empty; opened = StringSet.empty; opened_valve = false; pressure_released = 0; valve = graph}
+  traverse_tunnels' total_minutes start_visit
 
 let traverse_tunnels_double total_minutes graph =
   let num_flow_valves = count_flow_valves graph in
@@ -128,7 +127,7 @@ let run () = print_newline ();
   print_newline ();
   print_graph print_valve base_node;
   print_newline ();
-  print_int (traverse_tunnels 30 base_node);
+  print_int (traverse_tunnels 30 (count_flow_valves base_node) {visited = StringMap.empty; opened = StringSet.empty; opened_valve = false; pressure_released = 0; valve = base_node});
   print_newline ();
   print_newline ();
   print_int (traverse_tunnels_double 26 base_node);
