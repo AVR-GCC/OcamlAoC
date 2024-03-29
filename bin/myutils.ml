@@ -190,3 +190,14 @@ let cartesian_product f list1 list2 =
   List.concat_map (fun elem1 ->
     List.map (fun elem2 -> f elem1 elem2) list2
   ) list1
+
+let append_to_file filename content =
+  let flags = [Open_wronly; Open_creat; Open_append; Open_text] in
+  let permissions = 0o666 in
+  let oc = open_out_gen flags permissions filename in
+  try
+    Printf.fprintf oc "%s\n" content;
+    close_out oc
+  with e ->
+    close_out_noerr oc;
+    raise e
