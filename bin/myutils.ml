@@ -3,6 +3,11 @@ let printlist printelem lst = let rec middle = function
 | h::t -> printelem h; if t = [] then () else print_string "; "; middle t in
 print_string "["; middle lst; print_string "]"
 
+let list_to_string elem_to_string lst = let rec middle = function
+| [] -> ""
+| h::t -> elem_to_string h ^ (if t = [] then "" else ("; " ^ (middle t))) in
+"[" ^ (middle lst) ^ "]"
+
 let split_list manipulate delimiter lst =
   let rec get_chunk this_chunk remaining_list = match remaining_list with
   | [] -> (this_chunk, [])
