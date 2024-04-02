@@ -88,6 +88,10 @@ let traverse_tunnels total_minutes num_flow_valves start_visit =
     max_list all_options in
   traverse_tunnels' total_minutes start_visit
 
+let leftward_double_visit {valves; _;} =
+  let (valve1, valve2) = valves in
+  valve1.id >= valve2.id
+
 let traverse_tunnels_double total_minutes graph =
   let num_flow_valves = count_flow_valves graph in
   let rec traverse_tunnels' minutes_left visit =
@@ -108,11 +112,18 @@ let traverse_tunnels_double total_minutes graph =
     let dont_try_open_this_valve2 = opened_valve2 || valve2.value.flow_rate = 0 || StringSet.mem valve2.id opened in
     let minutes = minutes_left - 1 in
     let trying_to_open_same_valve = valve1.id = valve2.id && not dont_try_open_this_valve1 && not dont_try_open_this_valve2 in
-    let all_inputs1 = if dont_try_open_this_valve1 then move_inputs1 else (open_valve minutes visit1)::move_inputs1 in
-    let all_inputs2 = if dont_try_open_this_valve2 || trying_to_open_same_valve then move_inputs2 else (open_valve minutes visit2)::move_inputs2 in
+    let open1 = open_valve minutes visit1 in
+    let open2 = open_valve minutes visit2 in
+    let all_inputs1 = if dont_try_open_this_valve1 then move_inputs1 else open1::move_inputs1 in
+    let all_inputs2 = if dont_try_open_this_valve2 || trying_to_open_same_valve then move_inputs2 else open2::move_inputs2 in
     let all_inputs = cartesian_product (merge_visits pressure_released) all_inputs1 all_inputs2 in
-    let all_options = List.map (traverse_tunnels' minutes) all_inputs in
-    max_list all_options in
+    let inputs_without_replicates = if valve1.id = valve2.id then List.filter (leftward_double_visit) all_inputs else all_inputs in
+    let all_options_without_sleep = List.map (traverse_tunnels' minutes) inputs_without_replicates in
+    let sleep1 = traverse_tunnels minutes num_flow_valves visit1 in
+    let sleep2 = traverse_tunnels minutes num_flow_valves visit2 in
+    let all_options = pressure_released::sleep1::sleep2::all_options_without_sleep in
+    let final_result = max_list all_options in
+    final_result in
   traverse_tunnels' total_minutes {visited = StringMap.empty; opened = StringSet.empty; opened_valve = (false, false); pressure_released = 0; valves = (graph, graph)}
 
 let run () = print_newline ();
