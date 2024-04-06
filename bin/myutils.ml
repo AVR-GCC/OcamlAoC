@@ -181,7 +181,7 @@ let print_graph prnt graph =
   let rec print_node indentation tree printed (node, weight) =
     if (List.length tree < 2 || not (node.id = (List.hd (List.tl tree)))) then (
       print_string (String.make indentation ' ' ^ node.id);
-      if StringSet.mem node.id printed then (print_endline (" " ^ (string_of_int weight) ^ " (cycle)"); printed)
+      if StringSet.mem node.id printed then (print_endline (" - " ^ (string_of_int weight) ^ " (cycle)"); printed)
       else (
         print_string (" - " ^ (string_of_int weight));
         prnt node.value;
