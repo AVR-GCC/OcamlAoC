@@ -29,10 +29,10 @@ let create_value_item flow_rate = { flow_rate = int_of_string flow_rate }
 let process_line line = line
 |> split_on_strings ["Valve "; " has flow rate="; "; tunnels lead to valves "; "; tunnel leads to valve "]
 |> List.tl |> function
-  | [node_id; flow_rate; neighbors] -> (node_id, create_value_item flow_rate, split_on_string ", " neighbors)
+  | [node_id; flow_rate; neighbors] -> (node_id, create_value_item flow_rate, List.map (fun neighbor -> (neighbor, 0)) (split_on_string ", " neighbors))
   | _ -> failwith "Malformed line"
 
-let print_valve_tuple = print_mixed_triple print_string print_valve (printlist print_string)
+let print_valve_tuple = print_mixed_triple print_string print_valve (printlist (print_mixed_tuple print_string print_int))
 
 let split_double_visit {visited; opened; opened_valve; pressure_released; valves} = 
   let (opened_valve1, opened_valve2) = opened_valve in
@@ -55,12 +55,12 @@ let merge_visits original_pressure_released {visited = visited1; opened = opened
   {visited = new_visited; opened = new_opened; opened_valve = new_opened_valve; pressure_released = new_pressure_released; valves = new_valves}
 
 let count_flow_valves base_node = 
-  let rec count_flow_valves' visited count node =
+  let rec count_flow_valves' visited count (node, _) =
     if StringSet.mem node.id visited then count else
     let new_visited = StringSet.add node.id visited in
     let new_count = if node.value.flow_rate = 0 then count else count + 1 in
     sum (List.map (count_flow_valves' new_visited new_count) node.neighbors) in
-  count_flow_valves' StringSet.empty 0 base_node
+  count_flow_valves' StringSet.empty 0 (base_node, 0)
 
 let open_valve minutes {visited; opened; pressure_released; valve; _} =
   let new_opened = StringSet.add valve.id opened in
@@ -68,7 +68,7 @@ let open_valve minutes {visited; opened; pressure_released; valve; _} =
   let new_visited = StringMap.update valve.id (fun _ -> Some new_pressure_released) visited in
   {visited = new_visited; opened = new_opened; opened_valve = true; pressure_released = new_pressure_released; valve = valve}
 
-let move_to_valve {visited; opened; pressure_released; valve; _} new_valve =
+let move_to_valve {visited; opened; pressure_released; valve; _} (new_valve, _) =
   let new_visited = StringMap.update valve.id (fun _ -> Some pressure_released) visited in
   {visited = new_visited; opened = opened; opened_valve = false; pressure_released = pressure_released; valve = new_valve}
 
@@ -91,7 +91,7 @@ let traverse_tunnels total_minutes num_flow_valves start_visit =
 let leftward_double_visit {valves; _;} =
   let (valve1, valve2) = valves in
   valve1.id >= valve2.id
-
+(*
 let traverse_tunnels_double total_minutes graph =
   let num_flow_valves = count_flow_valves graph in
   let rec traverse_tunnels' minutes_left visit =
@@ -125,6 +125,7 @@ let traverse_tunnels_double total_minutes graph =
     let final_result = max_list all_options in
     final_result in
   traverse_tunnels' total_minutes {visited = StringMap.empty; opened = StringSet.empty; opened_valve = (false, false); pressure_released = 0; valves = (graph, graph)}
+*)
 
 let run () = print_newline ();
   let valve_tuples = List.map process_line lines in

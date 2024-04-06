@@ -139,7 +139,7 @@ module StringMap = Map.Make(String)
 type 'a node = {
   id: string;
   value: 'a;
-  mutable neighbors: 'a node list;
+  mutable neighbors: ('a node * int) list;
   mutable distance_map: int StringMap.t;
 }
 
@@ -148,20 +148,20 @@ let build_graph tuples = let rec build_graph' processed_nodes tups = match tups 
   | (id, value, neighbors)::t ->
     let new_node = {id = id; value = value; neighbors = []; distance_map = StringMap.empty} in
     new_node.neighbors <- List.fold_left (
-      fun acc neighbor_id -> match List.find_opt (fun node -> node.id = neighbor_id) processed_nodes with
-      | Some neighbor -> neighbor.neighbors <- new_node::neighbor.neighbors; neighbor::acc
+      fun acc (neighbor_id, weight) -> match List.find_opt (fun node -> node.id = neighbor_id) processed_nodes with
+      | Some neighbor -> neighbor.neighbors <- (new_node, weight)::neighbor.neighbors; (neighbor, weight)::acc
       | None -> acc
     ) [] neighbors;
     build_graph' (new_node::processed_nodes) t in
   build_graph' [] tuples
 
-let update_distance_maps nodes = let rec update_distance_maps_for_node distance origin node =
+let update_distance_maps nodes = let rec update_distance_maps_for_node distance origin (node, _) =
   if (distance = 0) then (List.iter (update_distance_maps_for_node 1 node.id) node.neighbors) else
   if not (origin = node.id) && (not (StringMap.mem origin node.distance_map) || ((StringMap.find origin node.distance_map) > distance)) then (
     node.distance_map <- StringMap.update origin (fun _ -> Some distance) node.distance_map;
     List.iter (update_distance_maps_for_node (distance + 1) origin) node.neighbors
   ) in
-  List.iter (fun node -> update_distance_maps_for_node 0 node.id node) nodes
+  List.iter (fun node -> update_distance_maps_for_node 0 node.id (node, 0)) nodes
 
 module StringSet = Set.Make(struct
   type t = string
@@ -169,27 +169,27 @@ module StringSet = Set.Make(struct
 end)
 
 let find_node id node =
-  let rec find_node' visited current =
-    if StringSet.mem current.id visited then None else
+  let rec find_node' visited (current, _) =
     if current.id = id then Some current else
+    if StringSet.mem current.id visited then None else
     let new_visited = StringSet.add current.id visited in
     let neighbor_results = List.filter_map (find_node' new_visited) current.neighbors in
     if List.length neighbor_results = 0 then None else Some (List.hd neighbor_results) in
-  find_node' StringSet.empty node
+  find_node' StringSet.empty (node, 0)
 
 let print_graph prnt graph =
-  let rec print_node indentation tree printed node =
+  let rec print_node indentation tree printed (node, weight) =
     if (List.length tree < 2 || not (node.id = (List.hd (List.tl tree)))) then (
       print_string (String.make indentation ' ' ^ node.id);
-      if StringSet.mem node.id printed then (print_endline " (cycle)"; printed)
+      if StringSet.mem node.id printed then (print_endline (" " ^ (string_of_int weight) ^ " (cycle)"); printed)
       else (
-        print_string " - ";
+        print_string (" - " ^ (string_of_int weight));
         prnt node.value;
         print_endline " ->";
         List.fold_left (fun acc cur -> (print_node (indentation + 2) (node.id::tree) (StringSet.add node.id acc) cur)) printed node.neighbors
       )
     ) else printed in
-  ignore (print_node 0 [] StringSet.empty graph)
+  ignore (print_node 0 [] StringSet.empty (graph, 0))
 
 let cartesian_product f list1 list2 =
   List.concat_map (fun elem1 ->
