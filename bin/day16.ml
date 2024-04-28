@@ -60,6 +60,29 @@ let traverse_stations start stations =
     max_score in
   traverse_stations' 30 0 stations start
 
+let traverse_stations_double start stations =
+  let rec traverse_stations' score remaining route minutes minutes_to_next_station (id1, flow_rate1, distance_map1) (id2, flow_rate2, distance_map2) =
+    let new_remaining = List.filter (fun (oid, _, _) -> oid <> id1 && oid <> id2) remaining in
+    let new_score = score + minutes * flow_rate1 in
+    let new_route = route ^ " --- " ^ id1 ^ "-" ^ id2 ^ " " ^ string_of_int minutes_to_next_station ^ " " ^ string_of_int minutes ^ "=" ^ string_of_int new_score in
+    (* let spacing = String.make minutes ' ' in *)
+    (* print_string spacing; print_string id1; print_string " "; print_int new_score; print_newline (); *)
+    if List.length new_remaining = 0 then (print_endline (route ^ "  ==" ^ string_of_int new_score); new_score) else
+    let tuple_to_score (id', flow_rate', distance_map') =
+      let distance = StringMap.find id' distance_map1 + 1 in
+      let new_minutes_to_next_station = abs (distance - minutes_to_next_station) in
+      let new_minutes = minutes - min distance minutes_to_next_station in
+      let fn = traverse_stations' new_score new_remaining new_route new_minutes new_minutes_to_next_station in
+      if distance >= minutes_to_next_station then
+        fn (id2, flow_rate2, distance_map2) (id', flow_rate', distance_map')
+      else (
+        fn (id', flow_rate', distance_map') (id2, flow_rate2, distance_map2)
+      ) in
+    let calculated = List.map tuple_to_score new_remaining in
+    let max_score = max_list (new_score::calculated) in
+    max_score in
+  traverse_stations' 0 stations "" 26 0 start start
+
 let run () = print_newline ();
   let valve_tuples = List.map process_line lines in
   printlist print_valve_tuple valve_tuples;
@@ -77,4 +100,8 @@ let run () = print_newline ();
   print_graph print_valve start;
   print_newline ();
   print_endline ("stations result " ^ string_of_int stations_result);
+  let stations_result_d = traverse_stations_double (start.id, start.value.flow_rate, start.distance_map) stations in
+  print_newline ();
+  print_newline ();
+  print_endline ("stations result double " ^ string_of_int stations_result_d);
   print_newline ();;
