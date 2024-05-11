@@ -31,6 +31,7 @@ let print_tuple prnt tup = match tup with
   | (one, two) -> print_string "("; prnt one; print_string ", "; prnt two; print_string ")"
 
 let explode str = List.rev (String.fold_left (fun acc elem -> (String.make 1 elem)::acc) [] str)
+let explode_char str = List.rev (String.fold_left (fun acc elem -> elem::acc) [] str)
 
 let print_array prnt arr = 
   print_string "[";
@@ -140,13 +141,18 @@ type 'a node = {
   id: string;
   value: 'a;
   mutable neighbors: ('a node * int) list;
-  mutable distance_map: int StringMap.t;
+  mutable distance_map: int array array;
 }
+
+let init_two_letter_map () = Array.init 26 (fun _ -> (Array.init 26 (fun _ -> max_int)))
+
+let get_two_letter_map map id = match explode_char id with a::b::[] -> map.(Char.code a - 65).(Char.code b - 65) | _ -> max_int
+let set_two_letter_map map id value = match explode_char id with a::b::[] -> map.(Char.code a - 65).(Char.code b - 65) <- value | _ -> ()
 
 let build_graph tuples = let rec build_graph' processed_nodes tups = match tups with
   | [] -> processed_nodes
   | (id, value, neighbors)::t ->
-    let new_node = {id = id; value = value; neighbors = []; distance_map = StringMap.empty} in
+    let new_node = {id = id; value = value; neighbors = []; distance_map = init_two_letter_map ()} in
     new_node.neighbors <- List.fold_left (
       fun acc (neighbor_id, weight) -> match List.find_opt (fun node -> node.id = neighbor_id) processed_nodes with
       | Some neighbor -> neighbor.neighbors <- (new_node, weight)::neighbor.neighbors; (neighbor, weight)::acc
@@ -157,8 +163,8 @@ let build_graph tuples = let rec build_graph' processed_nodes tups = match tups 
 
 let update_distance_maps nodes = let rec update_distance_maps_for_node distance origin (node, _) =
   if (distance = 0) then (List.iter (update_distance_maps_for_node 1 node.id) node.neighbors) else
-  if not (origin = node.id) && (not (StringMap.mem origin node.distance_map) || ((StringMap.find origin node.distance_map) > distance)) then (
-    node.distance_map <- StringMap.update origin (fun _ -> Some distance) node.distance_map;
+  if not (origin = node.id) && get_two_letter_map node.distance_map origin > distance then (
+    set_two_letter_map node.distance_map origin distance;
     List.iter (update_distance_maps_for_node (distance + 1) origin) node.neighbors
   ) in
   List.iter (fun node -> update_distance_maps_for_node 0 node.id (node, 0)) nodes

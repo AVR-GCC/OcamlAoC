@@ -52,7 +52,7 @@ let traverse_stations start stations =
     let new_score = score + minutes * flow_rate in
     let new_remaining = List.filter (fun (oid, _, _) -> oid <> id) remaining in
     let tuple_to_score (id', flow_rate', distance_map') =
-      let distance = StringMap.find id' distance_map in
+      let distance = get_two_letter_map distance_map id' in
       if distance >= minutes then new_score else
       traverse_stations' (minutes - distance - 1) new_score new_remaining (id', flow_rate', distance_map') in
     let calculated = List.map tuple_to_score new_remaining in
@@ -79,7 +79,7 @@ let traverse_stations_double start stations =
       final_score
     ) else
     let tuple_to_score (id', flow_rate', distance_map') =
-      let distance = StringMap.find id' distance_map1 + 1 in
+      let distance = get_two_letter_map distance_map1 id' + 1 in
       let s4 = Sys.time () in
       let new_minutes_to_next_station = abs (distance - minutes_to_next_station) in
       let new_minutes = minutes - min distance minutes_to_next_station in
