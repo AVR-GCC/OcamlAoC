@@ -1,6 +1,6 @@
 open Myutils
 
-let lines = read_file "./inputs/day16test.txt"
+let lines = read_file "./inputs/day16real.txt"
 
 type valve = {
   flow_rate: int;
@@ -116,6 +116,8 @@ let run () = print_newline ();
   print_graph print_valve start;
   print_newline ();
   print_endline ("stations result " ^ string_of_int stations_result);
+  print_newline ();
+  print_endline ("time single " ^ string_of_float (s2 -. s1));
   let s3 = Sys.time () in
   let stations_result_d = traverse_stations_double (start.id, start.value.flow_rate, start.distance_map) stations in
   let s4 = Sys.time () in
@@ -123,7 +125,5 @@ let run () = print_newline ();
   print_newline ();
   print_endline ("stations result double " ^ string_of_int stations_result_d);
   print_newline ();
-  print_newline ();
-  print_endline ("time single " ^ string_of_float (s2 -. s1));
   print_endline ("time double " ^ string_of_float (s4 -. s3));
   print_newline ();;
