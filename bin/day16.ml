@@ -74,8 +74,8 @@ let traverse_stations_double start stations =
     let t2 = s3 -. s2 +. t2 in
     if List.length new_remaining = 0 then (
       let final_score = new_score + (minutes - minutes_to_next_station) * flow_rate2 in
-      let final_route = new_route ^ " --- " ^ id2 ^ " " ^ string_of_int minutes ^ "=" ^ string_of_int final_score ^ " t1 " ^ string_of_float t1 ^ " t2 " ^ string_of_float t2 ^ " t3 " ^ string_of_float t3 ^ " t4 " ^ string_of_float t4 in
-      print_endline final_route;
+      (* let final_route = new_route ^ " --- " ^ id2 ^ " " ^ string_of_int minutes ^ "=" ^ string_of_int final_score ^ " t1 " ^ string_of_float t1 ^ " t2 " ^ string_of_float t2 ^ " t3 " ^ string_of_float t3 ^ " t4 " ^ string_of_float t4 in *)
+      (* print_endline final_route; *)
       final_score
     ) else
     let tuple_to_score (id', flow_rate', distance_map') =
