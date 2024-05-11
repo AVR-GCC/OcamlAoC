@@ -108,14 +108,22 @@ let run () = print_newline ();
   match start_opt with
   | None -> ()
   | Some start -> 
+  let s1 = Sys.time () in
   let stations_result = traverse_stations (start.id, start.value.flow_rate, start.distance_map) stations in
+  let s2 = Sys.time () in
   print_newline ();
   print_newline ();
   print_graph print_valve start;
   print_newline ();
   print_endline ("stations result " ^ string_of_int stations_result);
+  let s3 = Sys.time () in
   let stations_result_d = traverse_stations_double (start.id, start.value.flow_rate, start.distance_map) stations in
+  let s4 = Sys.time () in
   print_newline ();
   print_newline ();
   print_endline ("stations result double " ^ string_of_int stations_result_d);
+  print_newline ();
+  print_newline ();
+  print_endline ("time single " ^ string_of_float (s2 -. s1));
+  print_endline ("time double " ^ string_of_float (s4 -. s3));
   print_newline ();;
