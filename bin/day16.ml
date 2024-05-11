@@ -1,6 +1,6 @@
 open Myutils
 
-let lines = read_file "./inputs/day16real.txt"
+let lines = read_file "./inputs/day16test.txt"
 
 type valve = {
   flow_rate: int;
