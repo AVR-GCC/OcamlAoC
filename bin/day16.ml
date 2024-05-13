@@ -61,41 +61,42 @@ let traverse_stations start stations =
   traverse_stations' 30 0 stations start
 
 let traverse_stations_double start stations =
-  let rec traverse_stations' score remaining route minutes minutes_to_next_station t1 t2 t3 t4 (id1, flow_rate1, distance_map1) (id2, flow_rate2, distance_map2) =
-    let s1 = Sys.time () in
+  let memoization = Hashtbl.create 1000 in
+  let rec traverse_stations' score remaining route minutes minutes_to_next_station (id1, flow_rate1, distance_map1) (id2, flow_rate2, distance_map2) =
+    if minutes < 0 then score else
     let new_remaining = List.filter (fun (oid, _, _) -> oid <> id1 && oid <> id2) remaining in
-    let s2 = Sys.time () in
     let new_score = score + minutes * flow_rate1 in
     let new_route = route ^ " --- " ^ id1 ^ "-" ^ id2 ^ " " ^ string_of_int minutes_to_next_station ^ " " ^ string_of_int minutes ^ "=" ^ string_of_int new_score in
     (* let spacing = String.make minutes ' ' in *)
     (* print_string spacing; print_string id1; print_string " "; print_int new_score; print_newline (); *)
-    let s3 = Sys.time () in
-    let t1 = s2 -. s1 +. t1 in
-    let t2 = s3 -. s2 +. t2 in
     if List.length new_remaining = 0 then (
       let final_score = new_score + (minutes - minutes_to_next_station) * flow_rate2 in
-      (* let final_route = new_route ^ " --- " ^ id2 ^ " " ^ string_of_int minutes ^ "=" ^ string_of_int final_score ^ " t1 " ^ string_of_float t1 ^ " t2 " ^ string_of_float t2 ^ " t3 " ^ string_of_float t3 ^ " t4 " ^ string_of_float t4 in *)
+      (* let final_route = new_route ^ " --- " ^ id2 ^ " " ^ string_of_int minutes ^ "=" ^ string_of_int final_score in *)
       (* print_endline final_route; *)
       final_score
     ) else
     let tuple_to_score (id', flow_rate', distance_map') =
       let distance = get_two_letter_map distance_map1 id' + 1 in
-      let s4 = Sys.time () in
       let new_minutes_to_next_station = abs (distance - minutes_to_next_station) in
       let new_minutes = minutes - min distance minutes_to_next_station in
-      let s5 = Sys.time () in
-      let t3 = s4 -. s3 +. t3 in
-      let t4 = s5 -. s4 +. t4 in
-      let fn = traverse_stations' new_score new_remaining new_route new_minutes new_minutes_to_next_station t1 t2 t3 t4 in
+      let fn = traverse_stations' new_score new_remaining new_route new_minutes new_minutes_to_next_station in
       if distance >= minutes_to_next_station then
         fn (id2, flow_rate2, distance_map2) (id', flow_rate', distance_map')
       else (
         fn (id', flow_rate', distance_map') (id2, flow_rate2, distance_map2)
       ) in
+    let key = id1 ^ "-" ^ id2 ^ "-" ^ string_of_int minutes ^ "-" ^ String.concat "" (List.sort compare (List.map (fun (id, _, _) -> id) new_remaining)) in
+    let next_stop_minutes = minutes - minutes_to_next_station in
+    let after_next_valve = if next_stop_minutes > 0 then next_stop_minutes * flow_rate2 else 0 in
+    if Hashtbl.mem memoization key then
+      Hashtbl.find memoization key + new_score + after_next_valve
+    else
     let calculated = List.map tuple_to_score new_remaining in
     let max_score = max_list (new_score::calculated) in
+    (* print_string key; print_string " "; print_int (max_score - new_score - after_next_valve); print_newline (); *)
+    Hashtbl.add memoization key (max_score - new_score - after_next_valve);
     max_score in
-  traverse_stations' 0 stations "" 26 0 0. 0. 0. 0. start start
+  traverse_stations' 0 stations "" 26 0 start start
 
 let run () = print_newline ();
   let valve_tuples = List.map process_line lines in
