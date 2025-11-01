@@ -26,6 +26,14 @@ let sum = List.fold_left (+) 0
 let max_list = List.fold_left (fun acc elem -> max acc elem) min_int
 
 let max_list_by f minval list = List.fold_left (fun acc elem -> if (f acc) > (f elem) then acc else elem) minval list
+let max_list_2d lst = max_list (List.map max_list lst)
+
+let rec sorted_lists_overlap l1 l2 =
+  match (l1, l2) with
+  | ([], _) | (_, []) -> []
+  | (h1::t1, h2::t2) ->
+      if h1 = h2 then h1::(sorted_lists_overlap t1 t2) else
+      if h1 < h2 then sorted_lists_overlap t1 l2 else sorted_lists_overlap l1 t2
 
 let print_tuple prnt tup = match tup with
   | (one, two) -> print_string "("; prnt one; print_string ", "; prnt two; print_string ")"
