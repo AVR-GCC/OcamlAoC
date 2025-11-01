@@ -41,8 +41,8 @@ let rec print_chamber chamber rock (x, y) =
   | (_, _, []) -> print_static_chamber []
   | ([], top, _) when top > 0 -> print_chamber_floor [] [] (-1); print_chamber chamber [] (x, top - 1)
   | ([], _, _) -> print_static_chamber chamber
-  | (rh :: rt, top, _) when top > 0 -> print_chamber_floor [] (prepare_rock_layer rh) (-1); print_chamber chamber rt (x, top - 1)
-  | (rh :: rt, 0, ch :: ct) -> print_chamber_floor ch (prepare_rock_layer rh) (-1); print_chamber ct rt (x, 0)
+  | (rh :: rt, top, _) when top > 0 -> print_chamber_floor [] (prepare_rock_layer x rh) (-1); print_chamber chamber rt (x, top - 1)
+  | (rh :: rt, 0, ch :: ct) -> print_chamber_floor ch (prepare_rock_layer x rh) (-1); print_chamber ct rt (x, 0)
   | (_, top, ch :: ct) -> print_chamber_floor ch [] (-1); print_chamber ct rock (x, top + 1)
 
 (* chamber = [[3]; [2; 3; 4]; [3]; [2; 3; 4; 5]] *)
