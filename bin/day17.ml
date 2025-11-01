@@ -34,8 +34,9 @@ let rec print_static_chamber chamber =
   | [] -> print_endline "+-------+"
   | floor :: rest -> print_chamber_floor floor [] (-1); print_static_chamber rest
 
+let prepare_rock_layer x = List.map (fun ind -> ind + x)
+
 let rec print_chamber chamber rock (x, y) =
-  let prepare_rock_layer rh = (List.map (fun ind -> ind + x) rh) in
   match (rock, y, chamber) with
   | (_, _, []) -> print_static_chamber []
   | ([], top, _) when top > 0 -> print_chamber_floor [] [] (-1); print_chamber chamber [] (x, top - 1)
