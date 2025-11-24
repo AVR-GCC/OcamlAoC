@@ -35,6 +35,7 @@ let rec print_static_chamber chamber =
   | floor :: rest -> print_chamber_floor floor [] (-1); print_static_chamber rest
 
 let prepare_rock_layer x = List.map (fun ind -> ind + x)
+let prepare_rock x = List.map (prepare_rock_layer x)
 
 let rec print_chamber chamber rock (x, y) =
   match (rock, y, chamber) with
@@ -91,6 +92,14 @@ let rec drop_rock chamber rock (x, y) directions =
       | (new_x, new_y) when new_y = y -> (new_x, y)
       | (new_x, new_y) -> drop_rock chamber rock (new_x, new_y) rest)
   | [] -> failwith "Out of directions"
+
+let rec merge_rock_into_chamber chamber rock (x, y) =
+  match (chamber, rock, y) with
+  | (_, [], _) -> chamber
+  | ([], _, _) -> prepare_rock x rock
+  | (_, r :: ock, yy) when yy > 0 -> (prepare_rock_layer x r) :: merge_rock_into_chamber chamber ock (x, y - 1)
+  | (c :: hamber, _, yy) when yy < 0 -> c :: merge_rock_into_chamber hamber rock (x, y + 1)
+  | (c :: hamber, r :: ock, _) -> merge_sorted (<) c r :: merge_rock_into_chamber hamber ock (x, 0)
 
 let run () = print_newline ();
   print_endline "Day 17";
