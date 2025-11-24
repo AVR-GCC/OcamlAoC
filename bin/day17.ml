@@ -64,7 +64,7 @@ let rec floor_clear floor rock_layer =
   match (floor, rock_layer) with
   | (_, []) -> true
   | ([], _) -> true
-  | (f :: loor, r :: _) when f > r -> floor_clear loor rock_layer
+  | (f :: loor, r :: _) when f < r -> floor_clear loor rock_layer
   | (f :: _, r :: _) when f = r -> false
   | (_ :: _, _ :: ock) -> floor_clear floor ock
 
