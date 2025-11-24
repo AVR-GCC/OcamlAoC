@@ -101,6 +101,15 @@ let rec merge_rock_into_chamber chamber rock (x, y) =
   | (c :: hamber, r :: ock, _) -> merge_sorted (<) c (prepare_rock_layer x r) :: merge_rock_into_chamber hamber ock (x, 0)
   | ([], _, _) -> prepare_rock x rock
 
+let rec drop_x_rocks chamber all_directions directions x index =
+  if index = x then chamber else
+  let rock_index = index mod 5 in
+  let rock = List.nth rocks rock_index in
+  let start_coor = (2, List.length rock + 3) in
+  let (final_coor, remaining_directions) = drop_rock chamber rock start_coor all_directions directions in
+  let next_chamber = merge_rock_into_chamber chamber rock final_coor in
+  drop_x_rocks next_chamber all_directions remaining_directions x (index + 1)
+
 let run () = print_newline ();
   print_endline "Day 17";
   print_newline ();
