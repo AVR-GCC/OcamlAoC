@@ -67,6 +67,16 @@ let rec floor_clear floor rock_layer =
   | (f :: _, r :: _) when f = r -> false
   | (_ :: _, _ :: ock) -> floor_clear floor ock
 
+let rec chamber_clear chamber rock (x, y) =
+  let max_rock = max_list_2d (List.map (prepare_rock_layer x) rock) in
+  if max_rock >= num_columns then false else
+  match (chamber, rock, y) with
+  | (_, [], _) -> true (* Finished checking rock *)
+  | ([], _, _) -> false (* Passed chamber floor *)
+  | (_, _ :: ock, yy) when yy > 0 -> chamber_clear chamber ock (x, y - 1) (* This rock layer is above top floor *)
+  | (_ :: hamber, _, yy) when yy < 0 -> chamber_clear hamber rock (x, y + 1) (* This floor is above the rock *)
+  | (c :: hamber, r :: ock, _) -> (floor_clear c (prepare_rock_layer x r)) && chamber_clear hamber ock (x, 0)
+
 let run () = print_newline ();
   print_endline "Day 17";
   print_newline ();
