@@ -223,3 +223,9 @@ let append_to_file filename content =
   with e ->
     close_out_noerr oc;
     raise e
+
+let rec merge_sorted comp lst1 lst2 =
+  match (lst1, lst2) with
+  | ([], _) -> lst2
+  | (_, []) -> lst1
+  | (h1 :: t1, h2 :: t2) -> if comp h1 h2 then h1 :: merge_sorted comp t1 lst2 else h2 :: merge_sorted comp lst1 t2
