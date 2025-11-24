@@ -84,6 +84,14 @@ let step chamber rock (x, y) direction =
   let new_y = if chamber_clear chamber rock (new_x, y - 1) then y - 1 else y in
   (new_x, new_y)
 
+let rec drop_rock chamber rock (x, y) directions =
+  match directions with
+  | dir :: rest -> 
+      (match step chamber rock (x, y) dir with
+      | (new_x, new_y) when new_y = y -> (new_x, y)
+      | (new_x, new_y) -> drop_rock chamber rock (new_x, new_y) rest)
+  | [] -> failwith "Out of directions"
+
 let run () = print_newline ();
   print_endline "Day 17";
   print_newline ();
