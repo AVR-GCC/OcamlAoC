@@ -77,6 +77,13 @@ let rec chamber_clear chamber rock (x, y) =
   | (_ :: hamber, _, yy) when yy < 0 -> chamber_clear hamber rock (x, y + 1) (* This floor is above the rock *)
   | (c :: hamber, r :: ock, _) -> (floor_clear c (prepare_rock_layer x r)) && chamber_clear hamber ock (x, 0)
 
+let step chamber rock (x, y) direction =
+  let new_x = match direction with
+  | ">" -> if chamber_clear chamber rock (x + 1, y) then x + 1 else x
+  | _ -> if chamber_clear chamber rock (x - 1, y) && x > 0 then x - 1 else x in
+  let new_y = if chamber_clear chamber rock (new_x, y - 1) then y - 1 else y in
+  (new_x, new_y)
+
 let run () = print_newline ();
   print_endline "Day 17";
   print_newline ();
