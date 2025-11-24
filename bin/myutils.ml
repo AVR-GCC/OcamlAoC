@@ -25,6 +25,7 @@ let sum = List.fold_left (+) 0
 
 let min_list = List.fold_left (fun acc elem -> min acc elem) max_int
 let max_list = List.fold_left (fun acc elem -> max acc elem) min_int
+let min_max_list = List.fold_left (fun (smallest, largest) elem -> (min smallest elem, max largest elem)) (max_int, min_int)
 
 let max_list_by f minval list = List.fold_left (fun acc elem -> if (f acc) > (f elem) then acc else elem) minval list
 let max_list_2d lst = max_list (List.map max_list lst)
