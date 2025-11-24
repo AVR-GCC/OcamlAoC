@@ -112,7 +112,10 @@ let rec drop_x_rocks chamber all_directions directions x index =
 
 let run () = print_newline ();
   print_endline "Day 17";
+  let directions = explode (List.hd lines) in
+  let final = drop_x_rocks [] directions directions 2022 0 in
+  print_chamber final [] (0, 0);
   print_newline ();
   print_newline ();
-  print_endline (List.hd lines);
-  print_newline ();;
+  print_int (List.length final);
+  print_newline ();
