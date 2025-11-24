@@ -99,7 +99,7 @@ let rec merge_rock_into_chamber chamber rock (x, y) =
   | ([], _, _) -> prepare_rock x rock
   | (_, r :: ock, yy) when yy > 0 -> (prepare_rock_layer x r) :: merge_rock_into_chamber chamber ock (x, y - 1)
   | (c :: hamber, _, yy) when yy < 0 -> c :: merge_rock_into_chamber hamber rock (x, y + 1)
-  | (c :: hamber, r :: ock, _) -> merge_sorted (<) c r :: merge_rock_into_chamber hamber ock (x, 0)
+  | (c :: hamber, r :: ock, _) -> merge_sorted (<) c (prepare_rock_layer x r) :: merge_rock_into_chamber hamber ock (x, 0)
 
 let run () = print_newline ();
   print_endline "Day 17";
