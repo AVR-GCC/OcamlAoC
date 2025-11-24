@@ -29,6 +29,7 @@ let min_max_list = List.fold_left (fun (smallest, largest) elem -> (min smallest
 
 let max_list_by f minval list = List.fold_left (fun acc elem -> if (f acc) > (f elem) then acc else elem) minval list
 let max_list_2d lst = max_list (List.map max_list lst)
+let min_list_2d lst = min_list (List.map min_list lst)
 
 let rec sorted_lists_overlap l1 l2 =
   match (l1, l2) with
