@@ -23,6 +23,7 @@ let split_list manipulate delimiter lst =
 
 let sum = List.fold_left (+) 0
 
+let min_list = List.fold_left (fun acc elem -> min acc elem) max_int
 let max_list = List.fold_left (fun acc elem -> max acc elem) min_int
 
 let max_list_by f minval list = List.fold_left (fun acc elem -> if (f acc) > (f elem) then acc else elem) minval list
