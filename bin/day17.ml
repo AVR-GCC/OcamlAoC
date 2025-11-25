@@ -1,6 +1,6 @@
 open Myutils
 
-let lines = read_file "./inputs/day17test.txt"
+let lines = read_file "./inputs/day17real.txt"
 
 let num_columns = 7
 
