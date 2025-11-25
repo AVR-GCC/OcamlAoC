@@ -127,8 +127,11 @@ let rec drop_x_rocks acc chamber all_directions directions x index =
 let run () = print_newline ();
   print_endline "Day 17";
   let directions = explode (List.hd lines) in
-  let (final, total_cut) = drop_x_rocks 0 [] directions directions 10_000_000 0 in
+  let s1 = Sys.time () in
+  let (final, total_cut) = drop_x_rocks 0 [] directions directions 1_000_000 0 in
+  let s2 = Sys.time () in
   print_chamber final [] (0, 0);
+  print_endline ("total time: " ^ string_of_float (s2 -. s1));
   print_newline ();
   print_newline ();
   print_int total_cut;
