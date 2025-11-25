@@ -95,27 +95,43 @@ let rec drop_rock chamber rock (x, y) all_directions directions =
 
 let rec merge_rock_into_chamber chamber rock (x, y) =
   match (chamber, rock, y) with
-  | (_, [], _) -> chamber
-  | (_, r :: ock, yy) when yy > 0 -> (prepare_rock_layer x r) :: merge_rock_into_chamber chamber ock (x, y - 1)
-  | (c :: hamber, _, yy) when yy < 0 -> c :: merge_rock_into_chamber hamber rock (x, y + 1)
-  | (c :: hamber, r :: ock, _) -> merge_sorted (<) c (prepare_rock_layer x r) :: merge_rock_into_chamber hamber ock (x, 0)
-  | ([], _, _) -> prepare_rock x rock
+  | (_, [], _) ->
+      let recent_rows = List.take 4 chamber in
+      let res = match List.find_index (fun floor -> List.length floor = num_columns) recent_rows with
+      | None -> (chamber, 0)
+      | Some ind ->
+          let new_chamber = List.take ind recent_rows in
+          let total_cut = List.length chamber - ind in
+          (new_chamber, total_cut) in
+      res
+  | (_, r :: ock, yy) when yy > 0 ->
+      let (rest_chamber, num_cut) = merge_rock_into_chamber chamber ock (x, y - 1) in
+      ((prepare_rock_layer x r) :: rest_chamber, num_cut)
+  | (c :: hamber, _, yy) when yy < 0 ->
+      let (rest_chamber, num_cut) = merge_rock_into_chamber hamber rock (x, y + 1) in
+      (c :: rest_chamber, num_cut)
+  | (c :: hamber, r :: ock, _) ->
+      let (rest_chamber, num_cut) = merge_rock_into_chamber hamber ock (x, 0) in
+      (merge_sorted (<) c (prepare_rock_layer x r) :: rest_chamber, num_cut)
+  | ([], _, _) -> (prepare_rock x rock, 0)
 
-let rec drop_x_rocks chamber all_directions directions x index =
-  if index = x then chamber else
+let rec drop_x_rocks acc chamber all_directions directions x index =
+  if index = x then (chamber, acc) else
   let rock_index = index mod 5 in
   let rock = List.nth rocks rock_index in
   let start_coor = (2, List.length rock + 3) in
   let (final_coor, remaining_directions) = drop_rock chamber rock start_coor all_directions directions in
-  let next_chamber = merge_rock_into_chamber chamber rock final_coor in
-  drop_x_rocks next_chamber all_directions remaining_directions x (index + 1)
+  let (next_chamber, cut) = merge_rock_into_chamber chamber rock final_coor in
+  drop_x_rocks (cut + acc) next_chamber all_directions remaining_directions x (index + 1)
 
 let run () = print_newline ();
   print_endline "Day 17";
   let directions = explode (List.hd lines) in
-  let final = drop_x_rocks [] directions directions 2022 0 in
+  let (final, total_cut) = drop_x_rocks 0 [] directions directions 10_000_000 0 in
   print_chamber final [] (0, 0);
   print_newline ();
   print_newline ();
-  print_int (List.length final);
+  print_int total_cut;
+  print_newline ();
+  print_int ((List.length final) + total_cut);
   print_newline ();
