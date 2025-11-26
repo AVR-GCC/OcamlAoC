@@ -86,12 +86,11 @@ let step chamber rock (x, y) direction =
   (new_x, new_y)
 
 let rec drop_rock chamber rock (x, y) all_directions directions =
-  let direction_func dir rest = match step chamber rock (x, y) dir with
-    | (new_x, new_y) when new_y = y -> ((new_x, y), rest)
-    | (new_x, new_y) -> drop_rock chamber rock (new_x, new_y) all_directions rest in
-  match directions with
-  | dir :: rest -> direction_func dir rest
-  | [] -> direction_func (List.hd all_directions) (List.tl all_directions)
+  match (directions, all_directions) with
+  | (dir :: rest, _) | ([], dir :: rest) ->
+    let (new_x, new_y) = step chamber rock (x, y) dir in
+    if new_y = y then ((new_x, y), rest) else drop_rock chamber rock (new_x, new_y) all_directions rest
+  | _ -> ((0, 0), all_directions)
 
 let rec merge_rock_into_chamber chamber rock (x, y) =
   match (chamber, rock, y) with
