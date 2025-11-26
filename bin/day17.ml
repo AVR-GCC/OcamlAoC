@@ -68,21 +68,21 @@ let rec floor_clear floor rock_layer =
   | (f :: _, r :: _) when f = r -> false
   | (_ :: _, _ :: ock) -> floor_clear floor ock
 
-let rec chamber_clear chamber rock (x, y) =
-  let max_rock = max_list_2d (List.map (prepare_rock_layer x) rock) in
+let rec chamber_clear chamber rock y =
+  let max_rock = max_list_2d rock in
   if max_rock >= num_columns then false else
   match (chamber, rock, y) with
   | (_, [], _) -> true (* Finished checking rock *)
-  | (_, _ :: ock, yy) when yy > 0 -> chamber_clear chamber ock (x, y - 1) (* This rock layer is above top floor *)
-  | (_ :: hamber, _, yy) when yy < 0 -> chamber_clear hamber rock (x, y + 1) (* This floor is above the rock *)
-  | (c :: hamber, r :: ock, _) -> (floor_clear c (prepare_rock_layer x r)) && chamber_clear hamber ock (x, 0)
+  | (_, _ :: ock, yy) when yy > 0 -> chamber_clear chamber ock (y - 1) (* This rock layer is above top floor *)
+  | (_ :: hamber, _, yy) when yy < 0 -> chamber_clear hamber rock (y + 1) (* This floor is above the rock *)
+  | (c :: hamber, r :: ock, _) -> (floor_clear c r) && chamber_clear hamber ock 0
   | ([], _, _) -> false (* Passed chamber floor *)
 
 let step chamber rock (x, y) direction =
   let new_x = match direction with
-  | ">" -> if chamber_clear chamber rock (x + 1, y) then x + 1 else x
-  | _ -> if chamber_clear chamber rock (x - 1, y) && x > 0 then x - 1 else x in
-  let new_y = if chamber_clear chamber rock (new_x, y - 1) then y - 1 else y in
+  | ">" -> if chamber_clear chamber (prepare_rock (x + 1) rock) y then x + 1 else x
+  | _ -> if x > 0 && chamber_clear chamber (prepare_rock (x - 1) rock) y then x - 1 else x in
+  let new_y = if chamber_clear chamber (prepare_rock new_x rock) (y - 1) then y - 1 else y in
   (new_x, new_y)
 
 let rec drop_rock chamber rock (x, y) all_directions directions =
