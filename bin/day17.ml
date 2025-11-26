@@ -77,18 +77,18 @@ let rec chamber_clear chamber rock y =
   | (c :: hamber, r :: ock, _) -> (floor_clear c r) && chamber_clear hamber ock 0
   | ([], _, _) -> false (* Passed chamber floor *)
 
-let step chamber rock rock_width (x, y) direction =
+let step steps chamber rock rock_width (x, y) direction =
   let new_x = match direction with
-  | ">" -> if rock_width + x < num_columns && chamber_clear chamber (prepare_rock (x + 1) rock) y then x + 1 else x
-  | _ -> if x > 0 && chamber_clear chamber (prepare_rock (x - 1) rock) y then x - 1 else x in
-  let new_y = if chamber_clear chamber (prepare_rock new_x rock) (y - 1) then y - 1 else y in
+  | ">" -> if rock_width + x < num_columns && (steps < 3 || chamber_clear chamber (prepare_rock (x + 1) rock) y) then x + 1 else x
+  | _ -> if x > 0 && (steps < 3 || chamber_clear chamber (prepare_rock (x - 1) rock) y) then x - 1 else x in
+  let new_y = if steps < 3 || chamber_clear chamber (prepare_rock new_x rock) (y - 1) then y - 1 else y in
   (new_x, new_y)
 
-let rec drop_rock chamber rock rock_width (x, y) all_directions directions =
+let rec drop_rock steps chamber rock rock_width (x, y) all_directions directions =
   match (directions, all_directions) with
   | (dir :: rest, _) | ([], dir :: rest) ->
-    let (new_x, new_y) = step chamber rock rock_width (x, y) dir in
-    if new_y = y then ((new_x, y), rest) else drop_rock chamber rock rock_width (new_x, new_y) all_directions rest
+    let (new_x, new_y) = step steps chamber rock rock_width (x, y) dir in
+    if new_y = y then ((new_x, y), rest) else drop_rock (steps + 1) chamber rock rock_width (new_x, new_y) all_directions rest
   | _ -> ((0, 0), all_directions)
 
 let rec merge_rock_into_chamber chamber rock (x, y) =
@@ -119,7 +119,7 @@ let rec drop_x_rocks acc chamber all_directions directions x index =
   let rock = List.nth rocks rock_index in
   let rock_width = List.nth rock_widths rock_index in
   let start_coor = (2, List.length rock + 3) in
-  let (final_coor, remaining_directions) = drop_rock chamber rock rock_width start_coor all_directions directions in
+  let (final_coor, remaining_directions) = drop_rock 0 chamber rock rock_width start_coor all_directions directions in
   let (next_chamber, cut) = merge_rock_into_chamber chamber rock final_coor in
   drop_x_rocks (cut + acc) next_chamber all_directions remaining_directions x (index + 1)
 
