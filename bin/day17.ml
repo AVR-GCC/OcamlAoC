@@ -10,8 +10,8 @@ let l_rock = [[2]; [2]; [0; 1; 2]]
 let line_rock = [[0]; [0]; [0]; [0]]
 let square_rock = [[0; 1]; [0; 1]]
 
-let rocks = [minus_rock; plus_rock; l_rock; line_rock; square_rock]
-let rock_widths = [4; 3; 3; 1; 2]
+let rocks = [|minus_rock; plus_rock; l_rock; line_rock; square_rock|]
+let rock_widths = [|4; 3; 3; 1; 2|]
 
 let rec print_chamber_floor floor rock_layer index =
   if index = -1 then (print_char '|'; print_chamber_floor floor rock_layer 0) else
@@ -116,8 +116,8 @@ let rec merge_rock_into_chamber chamber rock (x, y) =
 let rec drop_x_rocks acc chamber all_directions directions x index =
   if index = x then (chamber, acc) else
   let rock_index = index mod 5 in
-  let rock = List.nth rocks rock_index in
-  let rock_width = List.nth rock_widths rock_index in
+  let rock = rocks.(rock_index) in
+  let rock_width = rock_widths.(rock_index) in
   let start_coor = (2, List.length rock + 3) in
   let (final_coor, remaining_directions) = drop_rock 0 chamber rock rock_width start_coor all_directions directions in
   let (next_chamber, cut) = merge_rock_into_chamber chamber rock final_coor in
