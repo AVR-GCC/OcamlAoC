@@ -12,6 +12,7 @@ let square_rock = [[0; 1]; [0; 1]]
 
 let rocks = [|minus_rock; plus_rock; l_rock; line_rock; square_rock|]
 let rock_widths = [|4; 3; 3; 1; 2|]
+let rock_heights = [|1; 3; 3; 4; 2|]
 
 let rec print_chamber_floor floor rock_layer index =
   if index = -1 then (print_char '|'; print_chamber_floor floor rock_layer 0) else
@@ -114,11 +115,13 @@ let rec merge_rock_into_chamber chamber rock (x, y) =
   | ([], _, _) -> (prepare_rock x rock, 0)
 
 let rec drop_x_rocks acc chamber all_directions directions x index =
+  if index mod 1_000_000_000 = 0 then (print_int index; print_newline ());
   if index = x then (chamber, acc) else
   let rock_index = index mod 5 in
   let rock = rocks.(rock_index) in
   let rock_width = rock_widths.(rock_index) in
-  let start_coor = (2, List.length rock + 3) in
+  let rock_height = rock_heights.(rock_index) in
+  let start_coor = (2, rock_height + 3) in
   let (final_coor, remaining_directions) = drop_rock 0 chamber rock rock_width start_coor all_directions directions in
   let (next_chamber, cut) = merge_rock_into_chamber chamber rock final_coor in
   drop_x_rocks (cut + acc) next_chamber all_directions remaining_directions x (index + 1)
@@ -127,7 +130,7 @@ let run () = print_newline ();
   print_endline "Day 17";
   let directions = explode (List.hd lines) in
   let s1 = Sys.time () in
-  let (final, total_cut) = drop_x_rocks 0 [] directions directions 1_000_000 0 in
+  let (final, total_cut) = drop_x_rocks 0 [] directions directions 1_000_000_000_000 0 in
   let s2 = Sys.time () in
   print_chamber final [] (0, 0);
   print_endline ("total time: " ^ string_of_float (s2 -. s1));
