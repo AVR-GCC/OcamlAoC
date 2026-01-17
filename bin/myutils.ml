@@ -152,6 +152,51 @@ let print_opt prnt opt = match opt with
 
 module StringMap = Map.Make(String)
 
+type 'a cycle_node = {
+  cid: int;
+  value: 'a;
+  mutable prev: 'a cycle_node option;
+  mutable next: 'a cycle_node option;
+}
+
+let print_cycle print_val = function
+  | None -> print_endline "None"
+  | Some cycle ->
+      let rec print_cycle_rec stop_id = function
+        | None -> ()
+        | Some node ->
+            print_int node.cid;
+            print_string ": ";
+            print_val node.value;
+            print_string " -> ";
+            match node.next with
+              | None -> () | Some next when next.cid = stop_id -> ()
+              | Some next -> print_cycle_rec stop_id (Some next) in
+        print_cycle_rec cycle.cid (Some cycle)
+
+let add_to_original_cycle cycle_opt value =
+  match cycle_opt with
+  | None ->
+    let new_node = { cid = 0; value = value; prev = None; next = None } in
+    new_node.prev <- Some new_node;
+    new_node.next <- Some new_node;
+    Some new_node
+  | Some cycle ->
+    let new_node = { cid = cycle.cid + 1; value = value; prev = Some cycle; next = cycle.next } in
+    Option.iter (fun next ->
+      next.prev <- Some new_node
+    ) cycle.next;
+    cycle.next <- Some new_node;
+    Some new_node
+
+let get_next = function
+  | None -> None
+  | Some node -> node.next
+
+let get_prev = function
+  | None -> None
+  | Some node -> node.prev
+
 type 'a node = {
   id: string;
   value: 'a;
