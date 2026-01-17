@@ -241,13 +241,8 @@ let rec geodes_openable_for_blueprint state blueprint =
   let max_result = max_list_by (fun (total, _) -> total) (0, []) totals_and_resources in
   max_result
   )
-      
-let run () = print_newline ();
-  print_endline "Day 19";
-  print_newline ();
-  let lines = read_file "./inputs/day19.real.txt" in
-  print_newline ();
-  let blueprints = List.map line_to_blueprint lines in
+
+let part1 blueprints =
   let start_state = {
     count = 24;
     resources = base_resources;
@@ -274,5 +269,45 @@ let run () = print_newline ();
     bp.id * geodes
   ) blueprints in
   print_endline "summed quality:";
-  print_int (sum geodes_openable);
+  print_int (sum geodes_openable)
+
+let part2 blueprints =
+  let start_state = {
+    count = 32;
+    resources = base_resources;
+    robots = setr Ore 1 base_resources;
+    factory = None;
+  } in
+  print_newline ();
+  let geodes_openable = List.map (fun bp -> 
+    print_newline ();
+    print_newline ();
+    print_endline "checking blueprint";
+    print_blueprint bp;
+    let s1 = Sys.time () in
+    let (geodes, bots) = geodes_openable_for_blueprint start_state bp in
+    let s2 = Sys.time () in
+    print_endline ("total time: " ^ string_of_float (s2 -. s1));
+    print_newline ();
+    print_newline ();
+    print_endline "with bots:";
+    print_resource_option_list bots;
+    print_newline ();
+    print_endline ("cracks " ^ string_of_int geodes ^ " geodes");
+    geodes
+  ) blueprints in
+  print_endline "product of these blueprints";
+  let product = List.fold_left (fun acc elem -> acc * elem) 1 geodes_openable in
+  print_int product
+      
+let run () = print_newline ();
+  print_endline "Day 19";
+  print_newline ();
+  let lines = read_file "./inputs/day19.real.txt" in
+  print_newline ();
+  let blueprints = List.map line_to_blueprint lines in
+  (* part1 blueprints; *)
+  let first_three = List.take 3 blueprints in
+  printlist print_blueprint first_three;
+  part2 first_three;
   print_newline ();;
