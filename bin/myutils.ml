@@ -3,6 +3,10 @@ let printlist printelem lst = let rec middle = function
 | h::t -> printelem h; if t = [] then () else print_string "; "; middle t in
 print_string "["; middle lst; print_string "]"
 
+let string_of_option string_of_elem = function
+  | None -> "None"
+  | Some elem -> string_of_elem elem
+
 let list_to_string elem_to_string lst = let rec middle = function
 | [] -> ""
 | h::t -> elem_to_string h ^ (if t = [] then "" else ("; " ^ (middle t))) in
