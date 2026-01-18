@@ -7,7 +7,7 @@ let run () = print_newline ();
   let numbers = List.map int_of_string lines in
   printlist print_int numbers;
   print_newline ();
-  let cycle = List.fold_left add_to_original_cycle None numbers in
+  let cycle = List.fold_left add_to_cycle None numbers in
   Option.iter (fun next ->
     print_cycle print_int (Some next)
   ) (get_next cycle);

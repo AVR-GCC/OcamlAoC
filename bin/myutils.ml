@@ -174,7 +174,7 @@ let print_cycle print_val = function
               | Some next -> print_cycle_rec stop_id (Some next) in
         print_cycle_rec cycle.cid (Some cycle)
 
-let add_to_original_cycle cycle_opt value =
+let add_to_cycle cycle_opt value =
   match cycle_opt with
   | None ->
     let new_node = { cid = 0; value = value; prev = None; next = None } in
