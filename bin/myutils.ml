@@ -152,6 +152,10 @@ let print_opt prnt opt = match opt with
 
 module StringMap = Map.Make(String)
 
+let rec apply_n_times f x = function
+  | 0 -> x
+  | t -> apply_n_times f (f x) (t - 1)
+
 type 'a cycle_node = {
   cid: int;
   value: 'a;
@@ -172,9 +176,32 @@ let print_cycle print_val = function
             match node.next with
               | None -> () | Some next when next.cid = stop_id -> ()
               | Some next -> print_cycle_rec stop_id (Some next) in
-        print_cycle_rec cycle.cid (Some cycle)
+      print_cycle_rec cycle.cid (Some cycle)
 
-let add_to_cycle cycle_opt value =
+let remove_from_cycle cycle_opt =
+  match cycle_opt with
+  | None -> None
+  | Some cycle ->
+      match (cycle.prev, cycle.next) with
+      | (Some prev, Some next) ->
+          prev.next <- Some next;
+          next.prev <- Some prev;
+          Some next
+      | _ -> None
+
+let add_node_to_cycle cycle_opt new_node =
+  match cycle_opt with
+  | None -> new_node
+  | Some cycle ->
+    new_node.prev <- Some cycle;
+    new_node.next <- cycle.next;
+    Option.iter (fun next ->
+      next.prev <- Some new_node
+    ) cycle.next;
+    cycle.next <- Some new_node;
+    new_node
+
+let add_value_to_cycle cycle_opt value =
   match cycle_opt with
   | None ->
     let new_node = { cid = 0; value = value; prev = None; next = None } in
@@ -196,6 +223,14 @@ let get_next = function
 let get_prev = function
   | None -> None
   | Some node -> node.prev
+
+let navigate_in_cycle cycle size amount =
+  if amount = 0 then cycle else
+  let mod_amount = amount mod size in
+  let (abs_amount, negative) = (abs mod_amount, amount < 0) in
+  let (use_amount, use_negative) = if abs_amount > size / 2 then (size - abs_amount, not negative) else (abs_amount, negative) in
+  let func = if use_negative then get_prev else get_next in
+  apply_n_times func cycle use_amount
 
 type 'a node = {
   id: string;
