@@ -228,9 +228,8 @@ let navigate_in_cycle cycle size amount =
   if amount = 0 then cycle else
   let mod_amount = amount mod size in
   let (abs_amount, negative) = (abs mod_amount, amount < 0) in
-  let (use_amount, use_negative) = if abs_amount > size / 2 then (size - abs_amount, not negative) else (abs_amount, negative) in
-  let func = if use_negative then get_prev else get_next in
-  apply_n_times func cycle use_amount
+  let func = if negative then get_prev else get_next in
+  apply_n_times func cycle abs_amount
 
 type 'a node = {
   id: string;
