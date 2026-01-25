@@ -169,9 +169,11 @@ let print_cycle print_val = function
       let rec print_cycle_rec stop_id = function
         | None -> ()
         | Some node ->
+            print_string "[";
             print_int node.cid;
             print_string ": ";
             print_val node.value;
+            print_string "]";
             print_string " -> ";
             match node.next with
               | None -> () | Some next when next.cid = stop_id -> ()
@@ -188,6 +190,18 @@ let remove_from_cycle cycle_opt =
           next.prev <- Some prev;
           Some next
       | _ -> None
+
+let add_before_node_to_cycle cycle_opt new_node =
+  match cycle_opt with
+  | None -> new_node
+  | Some cycle ->
+    new_node.next <- Some cycle;
+    new_node.prev <- cycle.prev;
+    Option.iter (fun prev ->
+      prev.next <- Some new_node
+    ) cycle.prev;
+    cycle.prev <- Some new_node;
+    new_node
 
 let add_node_to_cycle cycle_opt new_node =
   match cycle_opt with
