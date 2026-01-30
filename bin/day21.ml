@@ -24,6 +24,12 @@ let get_op = function
   | "/" -> Div
   | x -> failwith ("bad operator: " ^ x)
 
+let flip_op = function
+  | Plus -> Minus
+  | Minus -> Plus
+  | Mul -> Div
+  | Div -> Mul
+
 let string_of_op = function
   | Plus -> "+"
   | Minus -> "-"
@@ -40,9 +46,10 @@ let string_of_operand = function
   | Num x -> string_of_int x
   | Str s -> s
 
+let print_operation { id; left; right; operator } = print_endline (id ^ ": " ^ (string_of_operand left) ^ " " ^ (string_of_op operator) ^ " " ^ (string_of_operand right))
+
 let print_statement = function
-  | Op { id; left; right; operator } ->
-    print_endline (id ^ ": " ^ (string_of_operand left) ^ " " ^ (string_of_op operator) ^ " " ^ (string_of_operand right))
+  | Op op -> print_operation op
   | Val { id; number } ->
     print_endline (id ^ ": " ^ (string_of_int number))
 
@@ -122,15 +129,53 @@ let add_statement (values_map, operations_map) statement =
   | Val value -> add_value values_map operations_map value
   | Op operation -> add_operation values_map operations_map operation
 
+let flip_op_map map =
+  StringMap.fold (fun key { id; left; right; operator } acc ->
+    StringMap.add id { id = key; left = left; right = right; operator = operator } acc
+  ) map StringMap.empty
+
+let rec calc_back op_id num map =
+  let { id; left; right; operator } = StringMap.find op_id map in
+  match (left, right) with
+  | (Str ls, Num rn) ->
+      let new_num = do_op num rn (flip_op operator) in
+      if ls = "humn" then new_num else calc_back id new_num map
+  | (Num ln, Str rs) -> (
+      match operator with
+      | Plus | Mul ->
+        let new_num = do_op num ln (flip_op operator) in
+        if rs = "humn" then new_num else calc_back id new_num map
+      | _ -> 
+        let new_num = do_op ln num operator in
+        if rs = "humn" then new_num else calc_back id new_num map
+  )
+  | _ -> failwith "bad operation"
+
 let part1 statements =
   let (values_map, _) = List.fold_left add_statement (StringMap.empty, StringMap.empty) statements in
   let root = StringMap.find "root" values_map in
   print_int root
 
+let part2 statements =
+  let filtered = List.filter (fun statement ->
+    match statement with
+    | Val { id; _ } -> id <> "humn"
+    | _ -> true
+  ) statements in
+  let (_, op_map) = List.fold_left add_statement (StringMap.empty, StringMap.empty) filtered in
+  let flipped = flip_op_map op_map in
+  let { left; right; _ } = StringMap.find "root" flipped in
+  let final = match (left, right) with
+  | (Str s, Num n) | (Num n, Str s) ->
+      calc_back s n flipped
+  | _ -> failwith "bad operation" in
+  print_int final;
+  print_newline ()
+
 let run () = print_newline ();
-  print_endline "Day 20";
+  print_endline "Day 21";
   print_newline ();
   let lines = read_file "./inputs/day21.real.txt" in
   let statements = List.map line_to_statement lines in
-  part1 statements;
+  part2 statements;
   print_newline ();;
