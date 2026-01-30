@@ -152,6 +152,12 @@ let print_opt prnt opt = match opt with
 
 module StringMap = Map.Make(String)
 
+let print_string_map print_val map =
+  StringMap.iter (fun key value ->
+    print_string (key ^ ": ");
+    print_val value;
+  ) map
+
 let rec apply_n_times f x = function
   | 0 -> x
   | t -> apply_n_times f (f x) (t - 1)
