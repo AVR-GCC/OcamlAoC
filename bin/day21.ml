@@ -122,15 +122,15 @@ let add_statement (values_map, operations_map) statement =
   | Val value -> add_value values_map operations_map value
   | Op operation -> add_operation values_map operations_map operation
 
+let part1 statements =
+  let (values_map, _) = List.fold_left add_statement (StringMap.empty, StringMap.empty) statements in
+  let root = StringMap.find "root" values_map in
+  print_int root
+
 let run () = print_newline ();
   print_endline "Day 20";
   print_newline ();
   let lines = read_file "./inputs/day21.real.txt" in
   let statements = List.map line_to_statement lines in
-  printlist print_statement statements;
-  print_newline ();
-  let (values_map, _) = List.fold_left add_statement (StringMap.empty, StringMap.empty) statements in
-  (* print_string_map (fun x -> print_int x; print_newline ()) values_map; *)
-  let root = StringMap.find "root" values_map in
-  print_int root;
+  part1 statements;
   print_newline ();;
