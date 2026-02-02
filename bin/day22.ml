@@ -103,13 +103,12 @@ let rec walk field ({ orientation; position = (x, y) } as state) instructions =
           walk field { orientation = (turn orientation d); position = (x, y) } rest
       | Dist d ->
           if d = 0 then walk field state rest else
-          let next_position = StateMap.find state field in
-          let next_state = { orientation = orientation; position = next_position } in
+          let next_state = StateMap.find state field in
           walk field next_state ((Dist (d - 1)) :: rest)
 
 let rec map_row row index row_index start_blocked start_index ori =
   let next_ind = inc index ori in
-  let path_to_self = (ms ori index row_index, (index, row_index)) in
+  let path_to_self = (ms ori index row_index, ms ori index row_index) in
   (* printlist print_string row; *)
   (* print_string @@ " " ^ string_of_int index; *)
   (* print_newline (); *)
@@ -119,12 +118,12 @@ let rec map_row row index row_index start_blocked start_index ori =
   | (" " :: "#" :: rest, _, _) -> map_row ("#" :: rest) next_ind row_index true (Some next_ind) ori
   | ("." :: " " :: _, true, _) -> path_to_self :: []
   | ("." :: " " :: _, false, Some num) ->
-      let path_to_start = (ms ori index row_index, (num, row_index)) in
-      let path_from_start = (ms (flip ori) num row_index, (index, row_index)) in
+      let path_to_start = (ms ori index row_index, ms ori num row_index) in
+      let path_from_start = (ms (flip ori) num row_index, ms (flip ori) index row_index) in
       path_to_start :: path_from_start :: []
   | ("." :: "." :: rest, _, _) ->
-      let path_to_next = (ms ori index row_index, (next_ind, row_index)) in
-      let path_from_next = (ms (flip ori) next_ind row_index, (index, row_index)) in
+      let path_to_next = (ms ori index row_index, ms ori next_ind row_index) in
+      let path_from_next = (ms (flip ori) next_ind row_index, ms (flip ori) index row_index) in
       let rec_call = map_row ("." :: rest) next_ind row_index start_blocked start_index ori in
       path_to_next :: path_from_next :: rec_call
   | ("." :: "#" :: rest, _, _) ->
@@ -132,10 +131,10 @@ let rec map_row row index row_index start_blocked start_index ori =
       path_to_self :: rec_call
   | ("#" :: " " :: _, true, _) | ([" "], _, _) | ([], _, _) -> []
   | ("#" :: " " :: _, false, Some num) ->
-      let path_from_start_to_self = (ms (flip ori) num row_index, (num, row_index)) in
+      let path_from_start_to_self = (ms (flip ori) num row_index, ms (flip ori) num row_index) in
       path_from_start_to_self :: []
   | ("#" :: "." :: rest, _, _) ->
-      let path_from_next_to_self = (ms (flip ori) next_ind row_index, (next_ind, row_index)) in
+      let path_from_next_to_self = (ms (flip ori) next_ind row_index, ms (flip ori) next_ind row_index) in
       let rec_call = map_row ("." :: rest) next_ind row_index start_blocked start_index ori in
       path_from_next_to_self :: rec_call
   | ("#" :: "#" :: rest, _, _) -> map_row ("#" :: rest) next_ind row_index start_blocked start_index ori
@@ -143,7 +142,7 @@ let rec map_row row index row_index start_blocked start_index ori =
 
 let map_col row index row_index start_blocked start_index ori =
   let mapped_as_row = map_row row index row_index start_blocked start_index ori in
-  List.map (function { orientation; position = (sx, sy) }, (cx, cy) -> ({ orientation; position = (sy, sx) }, (cy, cx))) mapped_as_row
+  List.map (function { orientation; position = (sx, sy) }, { orientation = _ori; position = (cx, cy) } -> ({ orientation; position = (sy, sx) }, { orientation; position = (cy, cx) })) mapped_as_row
 
 let rec pad_spaces size lst = match (lst, size) with
   | (_, 0) -> []
