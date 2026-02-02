@@ -3,6 +3,11 @@ let printlist printelem lst = let rec middle = function
 | h::t -> printelem h; if t = [] then () else print_string "; "; middle t in
 print_string "["; middle lst; print_string "]"
 
+let print_array printelem arr =
+  print_string "";
+  Array.iter printelem arr;
+  print_string ""
+
 let string_of_option string_of_elem = function
   | None -> "None"
   | Some elem -> string_of_elem elem
@@ -47,11 +52,6 @@ let print_tuple prnt tup = match tup with
 
 let explode str = List.rev (String.fold_left (fun acc elem -> (String.make 1 elem)::acc) [] str)
 let explode_char str = List.rev (String.fold_left (fun acc elem -> elem::acc) [] str)
-
-let print_array prnt arr = 
-  print_string "[";
-  Array.iteri (fun i x -> prnt x; if (i < Array.length arr - 1) then print_string ", ") arr;
-  print_string "]"
 
 let read_file filename = 
   let in_channel = open_in filename in
@@ -332,3 +332,10 @@ let rec merge_sorted comp lst1 lst2 =
   | ([], _) -> lst2
   | (_, []) -> lst1
   | (h1 :: t1, h2 :: t2) -> if comp h1 h2 then h1 :: merge_sorted comp t1 lst2 else h2 :: merge_sorted comp lst1 t2
+
+let join_list delimiter lst =
+  let rec join_list_rec = function
+  | [] -> []
+  | x :: rest -> x :: delimiter :: join_list_rec rest in
+  let pre_final = join_list_rec lst in
+  pre_final |> List.rev |> List.tl |> List.rev
