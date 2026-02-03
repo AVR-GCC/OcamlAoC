@@ -46,17 +46,9 @@ let print_state { orientation; position } =
   print_string " ";
   print_tuple print_int position
 
-type point = Clear | Blocked | Space | End | Start
-
 let print_instruction = function
   | Dist x -> print_int x
   | Turn t -> print_direction t
-
-let orientation_deltas = function
-  | North -> (0, -1)
-  | East -> (1, 0)
-  | South -> (0, 1)
-  | West -> (-1, 0)
 
 let orientation_numbers = function
   | North -> 3
@@ -79,16 +71,6 @@ let left_turn = function
 let turn orientation = function
   | Right -> right_turn orientation
   | Left -> left_turn orientation
-
-let get_point field (x, y) =
-  if y >= Array.length field then End else 
-  if y < 0 then Start else 
-  if x >= Array.length field.(y) then End else
-  if x < 0 then Start else
-  match field.(y).(x) with
-  | " " -> Space
-  | "." -> Clear
-  | _ -> Blocked
 
 let rec walk field ({ orientation; position = (x, y) } as state) instructions =
   (* print_state state; *)
