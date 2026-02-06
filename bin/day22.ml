@@ -29,7 +29,7 @@ module OrientationMap = Map.Make(struct
 end)
 
 type point = {
-  mutable neighbors: point OrientationMap.t;
+  mutable neighbors: (point * orientation) OrientationMap.t;
   position: int * int;
 }
 
@@ -47,16 +47,16 @@ let print_point { neighbors; position } =
   print_tuple print_int position;
   print_string " - [";
   match OrientationMap.find_opt North neighbors with
-  | Some { position; _ } -> print_string " N: "; print_tuple print_int position;
+  | Some ({ position; _ }, _) -> print_string " N: "; print_tuple print_int position;
   | _ -> ();
   match OrientationMap.find_opt South neighbors with
-  | Some { position; _ } -> print_string " S: "; print_tuple print_int position;
+  | Some ({ position; _ }, _) -> print_string " S: "; print_tuple print_int position;
   | _ -> ();
   match OrientationMap.find_opt East neighbors with
-  | Some { position; _ } -> print_string " E: "; print_tuple print_int position;
+  | Some ({ position; _ }, _) -> print_string " E: "; print_tuple print_int position;
   | _ -> ();
   match OrientationMap.find_opt West neighbors with
-  | Some { position; _ } -> print_string " W: "; print_tuple print_int position;
+  | Some ({ position; _ }, _) -> print_string " W: "; print_tuple print_int position;
   | _ -> ();
   print_string "]"
 
@@ -77,7 +77,7 @@ let print_instruction = function
 (* Utility *)
 let get_neighbor point orientation =
   match OrientationMap.find_opt orientation point.neighbors with
-  | None -> point
+  | None -> (point, orientation)
   | Some p -> p
 
 let orientation_numbers = function
@@ -147,12 +147,12 @@ let get_edges row =
 
 (* Connect *)
 let connect_points_vertical ({ neighbors = ln; _ } as l) ({ neighbors = rn; _ } as r) =
-    l.neighbors <- OrientationMap.add South r ln;
-    r.neighbors <- OrientationMap.add North l rn
+    l.neighbors <- OrientationMap.add South (r, South) ln;
+    r.neighbors <- OrientationMap.add North (l, North) rn
 
 let connect_points_horizontal ({ neighbors = ln; _ } as l) ({ neighbors = rn; _ } as r) =
-    l.neighbors <- OrientationMap.add East r ln;
-    r.neighbors <- OrientationMap.add West l rn
+    l.neighbors <- OrientationMap.add East (r, East) ln;
+    r.neighbors <- OrientationMap.add West (l, West) rn
 
 let rec connect_row = function
   | Point l :: Point r :: rest -> (
@@ -192,6 +192,14 @@ let connect_ends_col col =
 
 let connect_col_ends mat = List.iter connect_ends_col mat
 
+let connect_edges mat tra is_part_1 =
+  match is_part_1 with
+  | true -> (
+    connect_row_ends mat;
+    connect_col_ends tra
+  )
+  | _ -> ()
+
 (* Walk *)
 let rec walk ({ orientation; point } as state) instructions =
   (* print_state state; *)
@@ -206,8 +214,8 @@ let rec walk ({ orientation; point } as state) instructions =
       | Dist d ->
           if d = 0 then (walk state rest) else (
             (* print_point_pos point; print_orientation orientation; print_newline (); *)
-          let next_point = get_neighbor point orientation in
-          let next_state = { point = next_point; orientation } in
+          let (next_point, next_orientation) = get_neighbor point orientation in
+          let next_state = { point = next_point; orientation = next_orientation } in
           walk next_state ((Dist (d - 1)) :: rest))
 
 let state_to_password { orientation; point = { position = (x, y); _ } } = orientation_numbers orientation + (1000 * (y + 1)) + (4 * (x + 1))
@@ -225,8 +233,7 @@ let run () = print_newline ();
   let transposed = transpose initialized longest_row in
   connect_rows initialized;
   connect_cols transposed;
-  connect_row_ends initialized;
-  connect_col_ends transposed;
+  connect_edges initialized transposed true;
   (* printlist (fun l -> printlist print_point_opt l; print_newline ()) initialized; *)
   let start_point = get_start_point @@ List.hd initialized in
   let start_state = { orientation = East; point = start_point } in
