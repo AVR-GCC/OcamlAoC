@@ -46,23 +46,23 @@ let print_point_pos { position; _ } = print_tuple print_int position
 let print_point { neighbors; position } =
   print_tuple print_int position;
   print_string " - [";
-  match OrientationMap.find_opt North neighbors with
-  | Some ({ position; _ }, _) -> print_string " N: "; print_tuple print_int position;
-  | _ -> ();
-  match OrientationMap.find_opt South neighbors with
-  | Some ({ position; _ }, _) -> print_string " S: "; print_tuple print_int position;
-  | _ -> ();
-  match OrientationMap.find_opt East neighbors with
-  | Some ({ position; _ }, _) -> print_string " E: "; print_tuple print_int position;
-  | _ -> ();
-  match OrientationMap.find_opt West neighbors with
-  | Some ({ position; _ }, _) -> print_string " W: "; print_tuple print_int position;
-  | _ -> ();
+  (match OrientationMap.find_opt North neighbors with
+  | Some ({ position; _ }, _) -> print_string " N: "; print_tuple print_int position
+  | _ -> ());
+  (match OrientationMap.find_opt South neighbors with
+  | Some ({ position; _ }, _) -> print_string " S: "; print_tuple print_int position
+  | _ -> ());
+  (match OrientationMap.find_opt East neighbors with
+  | Some ({ position; _ }, _) -> print_string " E: "; print_tuple print_int position
+  | _ -> ());
+  (match OrientationMap.find_opt West neighbors with
+  | Some ({ position; _ }, _) -> print_string " W: "; print_tuple print_int position
+  | _ -> ());
   print_string "]"
 
 let print_point_opt = function
   | Block -> print_string "Block"
-  | Space -> print_string "Space"
+  | Space -> ()
   | Point p -> print_point p
 
 let print_state { orientation; point } =
@@ -200,6 +200,54 @@ let connect_edges mat tra is_part_1 =
   )
   | _ -> ()
 
+let connect_points ({ neighbors = ln; _ } as l) ({ neighbors = rn; _ } as r) ltr rtl =
+    l.neighbors <- OrientationMap.add ltr (r, flip rtl) ln;
+    r.neighbors <- OrientationMap.add rtl (l, flip ltr) rn
+
+let rec connect_edge e1 e2 rtl ltr =
+  match (e1, e2) with
+  | (Point h1 :: t1, Point h2 :: t2) -> connect_points h1 h2 rtl ltr; connect_edge t1 t2 rtl ltr
+  | (_ :: t1, _ :: t2) -> connect_edge t1 t2 rtl ltr
+  | ([], []) -> ()
+  | _ -> failwith "different sized squares"
+
+let parse_faces mat =
+  let size = List.length mat / 3 in
+  let section_1 = mat |> List.take size in
+  let section_2 = mat |> List.drop size |> List.take size in
+  let section_3 = mat |> List.drop (size * 2) |> List.map (List.filter (fun x -> x <> Space)) in
+  let face_one = List.map (List.filter (fun x -> x <> Space)) section_1 in
+  let face_two = List.map (fun row -> List.take size row) section_2 in
+  let face_three = List.map (fun row -> row |> List.drop size |> List.take size) section_2 in
+  let face_four = List.map (fun row -> row |> List.drop (size * 2) |> List.take size) section_2 in
+  let face_five = List.map (fun row -> row |> List.take size) section_3 in
+  let face_six = List.map (fun row -> row |> List.drop size |> List.take size) section_3 in
+  (face_one, face_two, face_three, face_four, face_five, face_six)
+
+let connect_cube mat =
+  let (f1, f2, f3, f4, f5, f6) = parse_faces mat in
+  let lf1 = List.map (fun r -> List.hd r) f1 in
+  let lf2 = List.map (fun r -> List.hd r) f2 in
+  let lf5 = List.map (fun r -> List.hd r) f5 in
+  let rf1 = List.map (fun r -> List.hd (List.rev r)) f1 in
+  let rf4 = List.map (fun r -> List.hd (List.rev r)) f4 in
+  let rf6 = List.map (fun r -> List.hd (List.rev r)) f6 in
+  let tf1 = List.hd f1 in
+  let tf2 = List.hd f2 in
+  let tf3 = List.hd f3 in
+  let tf6 = List.hd f6 in
+  let bf2 = List.hd (List.rev f2) in
+  let bf3 = List.hd (List.rev f3) in
+  let bf5 = List.hd (List.rev f5) in
+  let bf6 = List.hd (List.rev f6) in
+  connect_edge lf1 tf3 West North;
+  connect_edge lf2 (List.rev bf6) West South;
+  connect_edge lf5 (List.rev bf3) West South;
+  connect_edge rf1 (List.rev rf6) East East;
+  connect_edge rf4 (List.rev tf6) East North;
+  connect_edge tf1 (List.rev tf2) North North;
+  connect_edge bf2 (List.rev bf5) South South
+
 (* Walk *)
 let rec walk ({ orientation; point } as state) instructions =
   (* print_state state; *)
@@ -223,7 +271,7 @@ let state_to_password { orientation; point = { position = (x, y); _ } } = orient
 let run () = print_newline ();
   print_endline "Day 22";
   print_newline ();
-  let lines = read_file "./inputs/day22.real.txt" in
+  let lines = read_file "./inputs/day22.test.txt" in
   let reversed = List.rev lines in
   let map_strs = reversed |> List.tl |> List.tl |> List.rev in
   let exploded = List.map explode map_strs in
@@ -233,7 +281,8 @@ let run () = print_newline ();
   let transposed = transpose initialized longest_row in
   connect_rows initialized;
   connect_cols transposed;
-  connect_edges initialized transposed true;
+  connect_cube initialized;
+  (* connect_edges initialized transposed true; *)
   (* printlist (fun l -> printlist print_point_opt l; print_newline ()) initialized; *)
   let start_point = get_start_point @@ List.hd initialized in
   let start_state = { orientation = East; point = start_point } in
@@ -251,7 +300,6 @@ let run () = print_newline ();
   (* printlist print_instruction instructions; *)
   (* print_newline (); *)
   let finish_state = walk start_state instructions in
-  print_newline ();
   print_endline "final state:";
   print_state finish_state;
   print_newline ();
