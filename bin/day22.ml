@@ -211,42 +211,80 @@ let rec connect_edge e1 e2 rtl ltr =
   | ([], []) -> ()
   | _ -> failwith "different sized squares"
 
+(* let parse_faces mat = *)
+(*   let size = List.length mat / 3 in *)
+(*   let section_1 = mat |> List.take size in *)
+(*   let section_2 = mat |> List.drop size |> List.take size in *)
+(*   let section_3 = mat |> List.drop (size * 2) |> List.map (List.filter (fun x -> x <> Space)) in *)
+(*   let face_one = List.map (List.filter (fun x -> x <> Space)) section_1 in *)
+(*   let face_two = List.map (fun row -> List.take size row) section_2 in *)
+(*   let face_three = List.map (fun row -> row |> List.drop size |> List.take size) section_2 in *)
+(*   let face_four = List.map (fun row -> row |> List.drop (size * 2) |> List.take size) section_2 in *)
+(*   let face_five = List.map (fun row -> row |> List.take size) section_3 in *)
+(*   let face_six = List.map (fun row -> row |> List.drop size |> List.take size) section_3 in *)
+(*   (face_one, face_two, face_three, face_four, face_five, face_six) *)
+(**)
+(* let connect_cube mat = *)
+(*   let (f1, f2, f3, f4, f5, f6) = parse_faces mat in *)
+(*   let lf1 = List.map (fun r -> List.hd r) f1 in *)
+(*   let lf2 = List.map (fun r -> List.hd r) f2 in *)
+(*   let lf5 = List.map (fun r -> List.hd r) f5 in *)
+(*   let rf1 = List.map (fun r -> List.hd (List.rev r)) f1 in *)
+(*   let rf4 = List.map (fun r -> List.hd (List.rev r)) f4 in *)
+(*   let rf6 = List.map (fun r -> List.hd (List.rev r)) f6 in *)
+(*   let tf1 = List.hd f1 in *)
+(*   let tf2 = List.hd f2 in *)
+(*   let tf3 = List.hd f3 in *)
+(*   let tf6 = List.hd f6 in *)
+(*   let bf2 = List.hd (List.rev f2) in *)
+(*   let bf3 = List.hd (List.rev f3) in *)
+(*   let bf5 = List.hd (List.rev f5) in *)
+(*   let bf6 = List.hd (List.rev f6) in *)
+(*   connect_edge lf1 tf3 West North; *)
+(*   connect_edge lf2 (List.rev bf6) West South; *)
+(*   connect_edge lf5 (List.rev bf3) West South; *)
+(*   connect_edge rf1 (List.rev rf6) East East; *)
+(*   connect_edge rf4 (List.rev tf6) East North; *)
+(*   connect_edge tf1 (List.rev tf2) North North; *)
+(*   connect_edge bf2 (List.rev bf5) South South *)
+
 let parse_faces mat =
-  let size = List.length mat / 3 in
+  let size = 50 in
   let section_1 = mat |> List.take size in
   let section_2 = mat |> List.drop size |> List.take size in
-  let section_3 = mat |> List.drop (size * 2) |> List.map (List.filter (fun x -> x <> Space)) in
-  let face_one = List.map (List.filter (fun x -> x <> Space)) section_1 in
-  let face_two = List.map (fun row -> List.take size row) section_2 in
+  let section_3 = mat |> List.drop (size * 2) |> List.take size in
+  let section_4 = mat |> List.drop (size * 3) |> List.take size in
+  let face_one = List.map (fun row -> row |> List.drop size |> List.take size) section_1 in
+  let face_two = List.map (fun row -> row |> List.drop (size * 2) |> List.take size) section_1 in
   let face_three = List.map (fun row -> row |> List.drop size |> List.take size) section_2 in
-  let face_four = List.map (fun row -> row |> List.drop (size * 2) |> List.take size) section_2 in
-  let face_five = List.map (fun row -> row |> List.take size) section_3 in
-  let face_six = List.map (fun row -> row |> List.drop size |> List.take size) section_3 in
+  let face_four = List.map (fun row -> row |> List.take size) section_3 in
+  let face_five = List.map (fun row -> row |> List.drop size |> List.take size) section_3 in
+  let face_six = List.map (fun row -> row |> List.take size) section_4 in
   (face_one, face_two, face_three, face_four, face_five, face_six)
 
 let connect_cube mat =
   let (f1, f2, f3, f4, f5, f6) = parse_faces mat in
   let lf1 = List.map (fun r -> List.hd r) f1 in
-  let lf2 = List.map (fun r -> List.hd r) f2 in
-  let lf5 = List.map (fun r -> List.hd r) f5 in
-  let rf1 = List.map (fun r -> List.hd (List.rev r)) f1 in
-  let rf4 = List.map (fun r -> List.hd (List.rev r)) f4 in
+  let lf3 = List.map (fun r -> List.hd r) f3 in
+  let lf4 = List.map (fun r -> List.hd r) f4 in
+  let lf6 = List.map (fun r -> List.hd r) f6 in
+  let rf2 = List.map (fun r -> List.hd (List.rev r)) f2 in
+  let rf3 = List.map (fun r -> List.hd (List.rev r)) f3 in
+  let rf5 = List.map (fun r -> List.hd (List.rev r)) f5 in
   let rf6 = List.map (fun r -> List.hd (List.rev r)) f6 in
   let tf1 = List.hd f1 in
   let tf2 = List.hd f2 in
-  let tf3 = List.hd f3 in
-  let tf6 = List.hd f6 in
+  let tf4 = List.hd f4 in
   let bf2 = List.hd (List.rev f2) in
-  let bf3 = List.hd (List.rev f3) in
   let bf5 = List.hd (List.rev f5) in
   let bf6 = List.hd (List.rev f6) in
-  connect_edge lf1 tf3 West North;
-  connect_edge lf2 (List.rev bf6) West South;
-  connect_edge lf5 (List.rev bf3) West South;
-  connect_edge rf1 (List.rev rf6) East East;
-  connect_edge rf4 (List.rev tf6) East North;
-  connect_edge tf1 (List.rev tf2) North North;
-  connect_edge bf2 (List.rev bf5) South South
+  connect_edge lf1 (List.rev lf4) West West;
+  connect_edge tf1 lf6 North West;
+  connect_edge tf2 bf6 North South;
+  connect_edge rf2 (List.rev rf5) East East;
+  connect_edge bf2 rf3 South East;
+  connect_edge lf3 tf4 West North;
+  connect_edge bf5 rf6 South East
 
 (* Walk *)
 let rec walk ({ orientation; point } as state) instructions =
@@ -271,7 +309,7 @@ let state_to_password { orientation; point = { position = (x, y); _ } } = orient
 let run () = print_newline ();
   print_endline "Day 22";
   print_newline ();
-  let lines = read_file "./inputs/day22.test.txt" in
+  let lines = read_file "./inputs/day22.real.txt" in
   let reversed = List.rev lines in
   let map_strs = reversed |> List.tl |> List.tl |> List.rev in
   let exploded = List.map explode map_strs in
