@@ -1,8 +1,6 @@
 open Myutils
 
 (* Types *)
-type orientation = North | East | South | West
-
 type direction = Left | Right
 
 let print_direction = function
@@ -10,11 +8,6 @@ let print_direction = function
   | Right -> print_string "Right"
 
 type instruction = Dist of int | Turn of direction
-
-module OrientationMap = Map.Make(struct
-  type t = orientation
-  let compare = compare
-end)
 
 type point = {
   mutable neighbors: (point * orientation) OrientationMap.t;
@@ -29,12 +22,6 @@ type state = {
 }
 
 (* Print *)
-let print_orientation = function
-  | North -> print_string "North"
-  | East -> print_string "East"
-  | South -> print_string "South"
-  | West -> print_string "West"
-
 let print_point_pos { position; _ } = print_tuple print_int position
 
 let print_point { neighbors; position } =

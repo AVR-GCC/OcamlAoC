@@ -339,3 +339,16 @@ let join_list delimiter lst =
   | x :: rest -> x :: delimiter :: join_list_rec rest in
   let pre_final = join_list_rec lst in
   pre_final |> List.rev |> List.tl |> List.rev
+
+type orientation = North | East | South | West
+
+module OrientationMap = Map.Make(struct
+  type t = orientation
+  let compare = compare
+end)
+
+let print_orientation = function
+  | North -> print_string "North"
+  | East -> print_string "East"
+  | South -> print_string "South"
+  | West -> print_string "West"
