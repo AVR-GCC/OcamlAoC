@@ -3,18 +3,6 @@ open Myutils
 (* Types *)
 type orientation = North | East | South | West
 
-let flip = function
-  | North -> South
-  | East -> West
-  | South -> North
-  | West -> East
-
-let print_orientation = function
-  | North -> print_string "North"
-  | East -> print_string "East"
-  | South -> print_string "South"
-  | West -> print_string "West"
-
 type direction = Left | Right
 
 let print_direction = function
@@ -41,6 +29,12 @@ type state = {
 }
 
 (* Print *)
+let print_orientation = function
+  | North -> print_string "North"
+  | East -> print_string "East"
+  | South -> print_string "South"
+  | West -> print_string "West"
+
 let print_point_pos { position; _ } = print_tuple print_int position
 
 let print_point { neighbors; position } =
@@ -75,6 +69,12 @@ let print_instruction = function
   | Turn t -> print_direction t
 
 (* Utility *)
+let flip = function
+  | North -> South
+  | East -> West
+  | South -> North
+  | West -> East
+
 let get_neighbor point orientation =
   match OrientationMap.find_opt orientation point.neighbors with
   | None -> (point, orientation)
