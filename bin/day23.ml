@@ -121,6 +121,6 @@ let run () = print_newline ();
   print_newline ();
   print_int empty_tiles;
   print_newline ();
-  print_int rounds;
+  print_int @@ rounds + 1;
   (* TupleSet.iter (print_tuple print_int) start_set; *)
   print_newline ();;
