@@ -20,17 +20,6 @@ let print_instruction = function
   | Turn t -> print_direction t
 
 (* Utility *)
-let flip = function
-  | North -> South
-  | East -> West
-  | South -> North
-  | West -> East
-
-let get_neighbor point orientation =
-  match OrientationMap.find_opt orientation point.neighbors with
-  | None -> (point, orientation)
-  | Some p -> p
-
 let orientation_numbers = function
   | North -> 3
   | East -> 0
@@ -53,16 +42,6 @@ let turn orientation = function
   | Right -> right_turn orientation
   | Left -> left_turn orientation
 
-let rec transpose mat = function
-  | 0 -> []
-  | i ->
-      let (col, tail) = List.split @@ List.map (fun row ->
-        match row with
-        | h :: t -> (h, t)
-        | _ -> failwith "row not equalized"
-      ) mat in
-      col :: transpose tail (i - 1)
-
 let rec pad_spaces size lst = match (lst, size) with
   | (_, 0) -> []
   | ([], x) -> " " :: pad_spaces (x - 1) []
@@ -73,95 +52,7 @@ let rec get_start_point = function
   | _ :: rest -> get_start_point rest
   | _ -> failwith "start not found"
 
-(* Initialize *)
-let rec initialize_row row x y =
-  match row with
-  | "." :: rest ->
-      let point = Point { neighbors = OrientationMap.empty; position = (x, y) } in
-      point :: initialize_row rest (x + 1) y
-  | "#" :: rest -> Block :: initialize_row rest (x + 1) y
-  | " " :: rest -> Space :: initialize_row rest (x + 1) y
-  | _ -> []
-
-let initialize_mat mat = List.mapi (fun y row -> initialize_row row 0 y) mat
-
-let get_edges row =
-  let rec get_row_edges_rec start cur =
-    match (start, cur) with
-    | (Space, Space :: t) -> get_row_edges_rec Space t
-    | (Space, h :: t) -> get_row_edges_rec h t
-    | (Space, []) -> failwith "empty row"
-    | (f, [l]) | (f, l :: Space :: _) -> (f, l)
-    | (f, _ :: Block :: t) | (f, _ :: Point _ :: t) -> get_row_edges_rec f t
-    | _ -> failwith "malformed line" in
-  get_row_edges_rec Space row
-
 (* Connect *)
-let connect_points_vertical ({ neighbors = ln; _ } as l) ({ neighbors = rn; _ } as r) =
-    l.neighbors <- OrientationMap.add South (r, South) ln;
-    r.neighbors <- OrientationMap.add North (l, North) rn
-
-let connect_points_horizontal ({ neighbors = ln; _ } as l) ({ neighbors = rn; _ } as r) =
-    l.neighbors <- OrientationMap.add East (r, East) ln;
-    r.neighbors <- OrientationMap.add West (l, West) rn
-
-let rec connect_row = function
-  | Point l :: Point r :: rest -> (
-    connect_points_horizontal l r;
-    connect_row (Point r :: rest)
-  )
-  | [] | [_] -> ()
-  | _ :: t -> connect_row t
-
-let rec connect_rows = function
-  | [] -> ()
-  | h :: t -> connect_row h; connect_rows t
-
-let rec connect_col = function
-  | Point l :: Point r :: rest -> (
-    connect_points_vertical l r;
-    connect_col (Point r :: rest)
-  )
-  | _ :: t -> connect_col t
-  | [] -> ()
-
-let rec connect_cols = function
-  | [] -> ()
-  | h :: t -> connect_col h; connect_cols t
-
-let connect_ends_row row =
-  match get_edges row with
-  | (Point ps, Point pf) -> connect_points_horizontal pf ps
-  | _ -> ()
-
-let connect_row_ends mat = List.iter connect_ends_row mat
-
-let connect_ends_col col =
-  match get_edges col with
-  | (Point ps, Point pf) -> connect_points_vertical pf ps
-  | _ -> ()
-
-let connect_col_ends mat = List.iter connect_ends_col mat
-
-let connect_edges mat tra is_part_1 =
-  match is_part_1 with
-  | true -> (
-    connect_row_ends mat;
-    connect_col_ends tra
-  )
-  | _ -> ()
-
-let connect_points ({ neighbors = ln; _ } as l) ({ neighbors = rn; _ } as r) ltr rtl =
-    l.neighbors <- OrientationMap.add ltr (r, flip rtl) ln;
-    r.neighbors <- OrientationMap.add rtl (l, flip ltr) rn
-
-let rec connect_edge e1 e2 rtl ltr =
-  match (e1, e2) with
-  | (Point h1 :: t1, Point h2 :: t2) -> connect_points h1 h2 rtl ltr; connect_edge t1 t2 rtl ltr
-  | (_ :: t1, _ :: t2) -> connect_edge t1 t2 rtl ltr
-  | ([], []) -> ()
-  | _ -> failwith "different sized squares"
-
 (* let parse_faces mat = *)
 (*   let size = List.length mat / 3 in *)
 (*   let section_1 = mat |> List.take size in *)
@@ -237,6 +128,12 @@ let connect_cube mat =
   connect_edge lf3 tf4 West North;
   connect_edge bf5 rf6 South East
 
+let create_and_connect_points exploded len cube =
+  let (initialized, transposed) = exploded_to_points exploded len in
+  if cube then connect_cube initialized else connect_edges initialized transposed;
+  (* printlist (fun l -> printlist print_point_opt l; print_newline ()) initialized; *)
+  initialized
+
 (* Walk *)
 let rec walk ({ orientation; point } as state) instructions =
   (* print_state state; *)
@@ -266,14 +163,8 @@ let run () = print_newline ();
   let exploded = List.map explode map_strs in
   let longest_row = max_list @@ List.map List.length exploded in
   let equalized = List.map (pad_spaces longest_row) exploded in
-  let initialized = initialize_mat equalized in
-  let transposed = transpose initialized longest_row in
-  connect_rows initialized;
-  connect_cols transposed;
-  connect_cube initialized;
-  (* connect_edges initialized transposed true; *)
-  (* printlist (fun l -> printlist print_point_opt l; print_newline ()) initialized; *)
-  let start_point = get_start_point @@ List.hd initialized in
+  let points = create_and_connect_points equalized longest_row true in
+  let start_point = get_start_point @@ List.hd points in
   let start_state = { orientation = East; point = start_point } in
   let instructions_strs = List.hd reversed in
   let splitted_right = split_on_string "R" instructions_strs in

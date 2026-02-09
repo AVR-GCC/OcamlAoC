@@ -388,3 +388,114 @@ let print_traveler { orientation; point } =
   print_orientation orientation;
   print_string " ";
   print_point point
+
+let flip = function
+  | North -> South
+  | East -> West
+  | South -> North
+  | West -> East
+
+let get_neighbor point orientation =
+  match OrientationMap.find_opt orientation point.neighbors with
+  | None -> (point, orientation)
+  | Some p -> p
+
+let rec transpose mat = function
+  | 0 -> []
+  | i ->
+      let (col, tail) = List.split @@ List.map (fun row ->
+        match row with
+        | h :: t -> (h, t)
+        | _ -> failwith "row not equalized"
+      ) mat in
+      col :: transpose tail (i - 1)
+
+let rec initialize_row row x y =
+  match row with
+  | "." :: rest ->
+      let point = Point { neighbors = OrientationMap.empty; position = (x, y) } in
+      point :: initialize_row rest (x + 1) y
+  | "#" :: rest -> Block :: initialize_row rest (x + 1) y
+  | " " :: rest -> Space :: initialize_row rest (x + 1) y
+  | _ -> []
+
+let initialize_mat mat = List.mapi (fun y row -> initialize_row row 0 y) mat
+
+let get_edges row =
+  let rec get_row_edges_rec start cur =
+    match (start, cur) with
+    | (Space, Space :: t) -> get_row_edges_rec Space t
+    | (Space, h :: t) -> get_row_edges_rec h t
+    | (Space, []) -> failwith "empty row"
+    | (f, [l]) | (f, l :: Space :: _) -> (f, l)
+    | (f, _ :: Block :: t) | (f, _ :: Point _ :: t) -> get_row_edges_rec f t
+    | _ -> failwith "malformed line" in
+  get_row_edges_rec Space row
+
+let connect_points_vertical ({ neighbors = ln; _ } as l) ({ neighbors = rn; _ } as r) =
+    l.neighbors <- OrientationMap.add South (r, South) ln;
+    r.neighbors <- OrientationMap.add North (l, North) rn
+
+let connect_points_horizontal ({ neighbors = ln; _ } as l) ({ neighbors = rn; _ } as r) =
+    l.neighbors <- OrientationMap.add East (r, East) ln;
+    r.neighbors <- OrientationMap.add West (l, West) rn
+
+let rec connect_row = function
+  | Point l :: Point r :: rest -> (
+    connect_points_horizontal l r;
+    connect_row (Point r :: rest)
+  )
+  | [] | [_] -> ()
+  | _ :: t -> connect_row t
+
+let rec connect_rows = function
+  | [] -> ()
+  | h :: t -> connect_row h; connect_rows t
+
+let rec connect_col = function
+  | Point l :: Point r :: rest -> (
+    connect_points_vertical l r;
+    connect_col (Point r :: rest)
+  )
+  | _ :: t -> connect_col t
+  | [] -> ()
+
+let rec connect_cols = function
+  | [] -> ()
+  | h :: t -> connect_col h; connect_cols t
+
+let connect_ends_row row =
+  match get_edges row with
+  | (Point ps, Point pf) -> connect_points_horizontal pf ps
+  | _ -> ()
+
+let connect_row_ends mat = List.iter connect_ends_row mat
+
+let connect_ends_col col =
+  match get_edges col with
+  | (Point ps, Point pf) -> connect_points_vertical pf ps
+  | _ -> ()
+
+let connect_col_ends mat = List.iter connect_ends_col mat
+
+let connect_edges mat tra =
+    connect_row_ends mat;
+    connect_col_ends tra
+
+let connect_points ({ neighbors = ln; _ } as l) ({ neighbors = rn; _ } as r) ltr rtl =
+    l.neighbors <- OrientationMap.add ltr (r, flip rtl) ln;
+    r.neighbors <- OrientationMap.add rtl (l, flip ltr) rn
+
+let rec connect_edge e1 e2 rtl ltr =
+  match (e1, e2) with
+  | (Point h1 :: t1, Point h2 :: t2) -> connect_points h1 h2 rtl ltr; connect_edge t1 t2 rtl ltr
+  | (_ :: t1, _ :: t2) -> connect_edge t1 t2 rtl ltr
+  | ([], []) -> ()
+  | _ -> failwith "different sized squares"
+
+let exploded_to_points exploded len = 
+  let initialized = initialize_mat exploded in
+  let transposed = transpose initialized len in
+  connect_rows initialized;
+  connect_cols transposed;
+  (initialized, transposed)
