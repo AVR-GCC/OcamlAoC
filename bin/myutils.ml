@@ -352,3 +352,39 @@ let print_orientation = function
   | East -> print_string "East"
   | South -> print_string "South"
   | West -> print_string "West"
+
+type point = {
+  mutable neighbors: (point * orientation) OrientationMap.t;
+  position: int * int;
+}
+
+type point_opt = Point of point | Block | Space
+
+type traveler = {
+  orientation: orientation;
+  point: point;
+}
+
+let print_point_pos { position; _ } = print_tuple print_int position
+
+let print_point { neighbors; position } =
+  print_tuple print_int position;
+  print_string " - [";
+  (match OrientationMap.find_opt North neighbors with
+  | Some ({ position; _ }, _) -> print_string " N: "; print_tuple print_int position
+  | _ -> ());
+  (match OrientationMap.find_opt South neighbors with
+  | Some ({ position; _ }, _) -> print_string " S: "; print_tuple print_int position
+  | _ -> ());
+  (match OrientationMap.find_opt East neighbors with
+  | Some ({ position; _ }, _) -> print_string " E: "; print_tuple print_int position
+  | _ -> ());
+  (match OrientationMap.find_opt West neighbors with
+  | Some ({ position; _ }, _) -> print_string " W: "; print_tuple print_int position
+  | _ -> ());
+  print_string "]"
+
+let print_traveler { orientation; point } =
+  print_orientation orientation;
+  print_string " ";
+  print_point point

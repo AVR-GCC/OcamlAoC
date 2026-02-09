@@ -9,47 +9,11 @@ let print_direction = function
 
 type instruction = Dist of int | Turn of direction
 
-type point = {
-  mutable neighbors: (point * orientation) OrientationMap.t;
-  position: int * int;
-}
-
-type point_opt = Point of point | Block | Space
-
-type state = {
-  orientation: orientation;
-  point: point;
-}
-
 (* Print *)
-let print_point_pos { position; _ } = print_tuple print_int position
-
-let print_point { neighbors; position } =
-  print_tuple print_int position;
-  print_string " - [";
-  (match OrientationMap.find_opt North neighbors with
-  | Some ({ position; _ }, _) -> print_string " N: "; print_tuple print_int position
-  | _ -> ());
-  (match OrientationMap.find_opt South neighbors with
-  | Some ({ position; _ }, _) -> print_string " S: "; print_tuple print_int position
-  | _ -> ());
-  (match OrientationMap.find_opt East neighbors with
-  | Some ({ position; _ }, _) -> print_string " E: "; print_tuple print_int position
-  | _ -> ());
-  (match OrientationMap.find_opt West neighbors with
-  | Some ({ position; _ }, _) -> print_string " W: "; print_tuple print_int position
-  | _ -> ());
-  print_string "]"
-
 let print_point_opt = function
   | Block -> print_string "Block"
   | Space -> ()
   | Point p -> print_point p
-
-let print_state { orientation; point } =
-  print_orientation orientation;
-  print_string " ";
-  print_point point
 
 let print_instruction = function
   | Dist x -> print_int x
@@ -326,7 +290,7 @@ let run () = print_newline ();
   (* print_newline (); *)
   let finish_state = walk start_state instructions in
   print_endline "final state:";
-  print_state finish_state;
+  print_traveler finish_state;
   print_newline ();
   let password = state_to_password finish_state in
   print_endline "password:";
