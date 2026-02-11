@@ -356,6 +356,7 @@ let print_orientation = function
 type point = {
   mutable neighbors: (point * orientation) OrientationMap.t;
   position: int * int;
+  orientation: orientation option;
 }
 
 type point_opt = Point of point | Block | Space
@@ -367,7 +368,9 @@ type traveler = {
 
 let print_point_pos { position; _ } = print_tuple print_int position
 
-let print_point { neighbors; position } =
+let print_point { neighbors; position; _ } =
+  (* print_opt print_orientation orientation; *)
+  (* print_string " "; *)
   print_tuple print_int position;
   print_string " - [";
   (match OrientationMap.find_opt North neighbors with
@@ -383,6 +386,11 @@ let print_point { neighbors; position } =
   | Some ({ position; _ }, _) -> print_string " W: "; print_tuple print_int position
   | _ -> ());
   print_string "]"
+
+let print_point_opt = function
+  | Block -> print_string "Block"
+  | Space -> ()
+  | Point p -> print_point p
 
 let print_traveler { orientation; point } =
   print_orientation orientation;
@@ -413,7 +421,19 @@ let rec transpose mat = function
 let rec initialize_row row x y =
   match row with
   | "." :: rest ->
-      let point = Point { neighbors = OrientationMap.empty; position = (x, y) } in
+      let point = Point { neighbors = OrientationMap.empty; position = (x, y); orientation = None } in
+      point :: initialize_row rest (x + 1) y
+  | "v" :: rest ->
+      let point = Point { neighbors = OrientationMap.empty; position = (x, y); orientation = Some South } in
+      point :: initialize_row rest (x + 1) y
+  | "^" :: rest ->
+      let point = Point { neighbors = OrientationMap.empty; position = (x, y); orientation = Some North } in
+      point :: initialize_row rest (x + 1) y
+  | ">" :: rest ->
+      let point = Point { neighbors = OrientationMap.empty; position = (x, y); orientation = Some East } in
+      point :: initialize_row rest (x + 1) y
+  | "<" :: rest ->
+      let point = Point { neighbors = OrientationMap.empty; position = (x, y); orientation = Some West } in
       point :: initialize_row rest (x + 1) y
   | "#" :: rest -> Block :: initialize_row rest (x + 1) y
   | " " :: rest -> Space :: initialize_row rest (x + 1) y
@@ -498,4 +518,15 @@ let exploded_to_points exploded len =
   let transposed = transpose initialized len in
   connect_rows initialized;
   connect_cols transposed;
+  (* printlist (fun l -> printlist print_point_opt l; print_newline ()) initialized; *)
   (initialized, transposed)
+
+module TupleMap = Map.Make(struct
+  type t = int * int
+  let compare = compare
+end)
+
+module TupleSet = Set.Make(struct
+  type t = int * int
+  let compare = compare
+end)

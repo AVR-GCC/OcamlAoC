@@ -10,11 +10,6 @@ let print_direction = function
 type instruction = Dist of int | Turn of direction
 
 (* Print *)
-let print_point_opt = function
-  | Block -> print_string "Block"
-  | Space -> ()
-  | Point p -> print_point p
-
 let print_instruction = function
   | Dist x -> print_int x
   | Turn t -> print_direction t

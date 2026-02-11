@@ -1,15 +1,5 @@
 open Myutils
 
-module TupleSet = Set.Make(struct
-  type t = int * int
-  let compare = compare
-end)
-
-module TupleMap = Map.Make(struct
-  type t = int * int
-  let compare = compare
-end)
-
 let orientations = [North; South; West; East]
 
 let create_set exploded =
