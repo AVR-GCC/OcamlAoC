@@ -530,3 +530,11 @@ module TupleSet = Set.Make(struct
   type t = int * int
   let compare = compare
 end)
+
+let gcd x y =
+  let rec gcd_rec l s =
+    let modulu = l mod s in
+    if modulu = 0 then s else gcd_rec s modulu in
+  gcd_rec (max x y) (min x y)
+
+let lcm x y = x * y / (gcd x y)
