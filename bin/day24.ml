@@ -103,26 +103,28 @@ let rec get_all_blizzard_positions blizzards = function
   | x -> blizzards :: (get_all_blizzard_positions (move_blizzards blizzards) (x - 1))
 
 (* Expidition *)
-let moves = [Some East; Some South; Some West; Some North; None]
-
-let move_possible bliz point = function
+let move_possible bliz point start_y = function
   | None -> if TupleMap.mem point.position bliz then None else Some point
   | Some ori ->
       let ({ position = (nx, ny); _ } as np, _) = get_neighbor point ori in
       if TupleMap.mem (nx, ny) bliz then None else
       let (cx, cy) = point.position in
       if cx = nx && cy = ny then None else
-      if nx = 1 && ny = 0 then None else
+      if ny = start_y then None else
       match ori with
-      | North -> if cy < ny then None else Some np
-      | South -> if cy > ny then None else Some np
-      | West -> if cx < nx then None else Some np
-      | East -> if cx > nx then None else Some np
+      | North -> if cy <= ny then None else Some np
+      | South -> if cy >= ny then None else Some np
+      | West -> if cx <= nx then None else Some np
+      | East -> if cx >= nx then None else Some np
 
-let rec march consts blizzards step limit mem point end_height =
-  let (height, width, all_blizzards, _points) = consts in
+let rec march consts blizzards step limit mem point =
+  let (end_height, end_width, start_y, all_blizzards, points, moves, print) = consts in
   let { position = (x, y); _ } = point in
-  if limit < (width - 2 - x) + (height - 1 - y) then (None, mem) else ( (* Longer than path already found *)
+  if print then (
+    print_tuple print_int (x, y);
+    print_newline ();
+  );
+  if limit < abs (end_width - x) + abs (end_height - y) then (None, mem) else ( (* Longer than path already found *)
   if end_height = y then (Some [(x, y)], mem) else ( (* Reached end *)
   let map_key = (x, y, step mod (List.length all_blizzards)) in
   match ThrupleMap.find_opt map_key mem with
@@ -131,14 +133,20 @@ let rec march consts blizzards step limit mem point end_height =
   let (cur_blizzard, rem_blizzards) = match blizzards with
   | cur_blizzard :: rem_blizzards -> (cur_blizzard, rem_blizzards)
   | [] -> (List.hd all_blizzards, List.tl all_blizzards) in
-  let possible_points_opts = List.map (move_possible cur_blizzard point) moves in
+  let possible_points_opts = List.map (move_possible cur_blizzard point start_y) moves in
   let possible_points = List.filter_map (fun x -> x) possible_points_opts in
+  if print then (
+    printlist print_point_pos possible_points;
+    print_newline ();
+    print_field cur_blizzard (x, y) points;
+    print_newline ();
+  );
   if List.length possible_points = 0 then (None, mem) else ( (* Dead end *)
   let (path_opt, memo) = List.fold_left (fun (path_opt, memoi) next_point ->
     match path_opt with
-    | None -> march consts rem_blizzards (step + 1) (limit - 1) memoi next_point end_height
+    | None -> march consts rem_blizzards (step + 1) (limit - 1) memoi next_point
     | Some path ->
-        match march consts rem_blizzards (step + 1) (List.length path - 1) memoi next_point end_height with
+        match march consts rem_blizzards (step + 1) (List.length path - 1) memoi next_point with
         | (None, memoiz) -> (Some path, memoiz)
         | (Some opto, memoiz)-> if List.length opto < List.length path then (Some opto, memoiz) else (Some path, memoiz)
   ) (None, mem) possible_points in
@@ -160,15 +168,48 @@ let run () = print_newline ();
   let base_blizzards = collect_blizzards points in
   let all_blizzards = get_all_blizzard_positions base_blizzards blizzard_cycle in
   let exp_opt = List.hd @@ List.tl @@ List.hd points in
+  let moves = [Some East; Some South; Some West; Some North; None] in
   match exp_opt with
   | Block | Space -> failwith "Bad start position"
   | Point exp -> (
-    let consts = (height, width, all_blizzards, points) in
-    let (path_opt, _) = march consts (List.tl all_blizzards) 0 max_int ThrupleMap.empty exp (height - 1) in
+    let consts = (height - 1, width - 2, 0, all_blizzards, points, moves, false) in
+    let (path_opt, _) = march consts (List.tl all_blizzards) 0 max_int ThrupleMap.empty exp in
     match path_opt with
     | None -> print_endline "No path found"
     | Some path ->
-    print_int @@ List.length path - 1;
+    let first_trip_time = List.length path - 1 in
+    print_endline "first trip:";
+    print_int first_trip_time;
+    print_newline ();
+    let blizzard_index_return = first_trip_time mod List.length all_blizzards + 1 in
+    let return_trip_blizzards = List.drop blizzard_index_return all_blizzards in
+    let return_trip_start = List.nth (List.nth points (height - 1)) (width - 2) in
+    match return_trip_start with
+    | Block | Space -> failwith "Bad start position"
+    | Point ret_exp ->
+    let ret_moves = [Some West; Some North; Some East; Some South; None] in
+    let ret_consts = (0, 1, height - 1, all_blizzards, points, ret_moves, false) in
+    let (ret_path_opt, _) = march ret_consts return_trip_blizzards 0 max_int ThrupleMap.empty ret_exp in
+    match ret_path_opt with
+    | None -> print_endline "No path found"
+    | Some ret_path ->
+    let second_trip_time = List.length ret_path - 1 in
+    print_endline "second trip:";
+    print_int second_trip_time;
+    print_newline ();
+    let both_trip_time = first_trip_time + second_trip_time in
+    let blizzard_index_restart = both_trip_time mod List.length all_blizzards + 1 in
+    let restart_trip_blizzards = List.drop blizzard_index_restart all_blizzards in
+    let (res_path_opt, _) = march consts restart_trip_blizzards 0 max_int ThrupleMap.empty exp in
+    match res_path_opt with
+    | None -> print_endline "No path found"
+    | Some res_path ->
+    let third_trip_time = List.length res_path - 1 in
+    print_endline "third trip:";
+    print_int third_trip_time;
+    print_newline ();
+    print_endline "total:";
+    print_int (third_trip_time + both_trip_time);
   );
   print_newline ();
   print_newline ();;
