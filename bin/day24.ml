@@ -163,14 +163,11 @@ let run () = print_newline ();
   match exp_opt with
   | Block | Space -> failwith "Bad start position"
   | Point exp -> (
-    let s1 = Sys.time () in
     let consts = (height, width, all_blizzards, points) in
     let (path_opt, _) = march consts (List.tl all_blizzards) 0 max_int ThrupleMap.empty exp (height - 1) in
     match path_opt with
     | None -> print_endline "No path found"
     | Some path ->
-    let s2 = Sys.time () in
-    print_endline ("time:" ^ string_of_float (s2 -. s1));
     print_int @@ List.length path - 1;
   );
   print_newline ();
