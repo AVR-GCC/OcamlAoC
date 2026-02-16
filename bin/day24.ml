@@ -147,17 +147,12 @@ let rec march consts blizzards step limit mem point =
   | Some path -> Some ((x, y) :: path) in
   let memoi = ThrupleMap.add map_key final_path memo in
   (final_path, memoi)
-  )
-  )
-  )
-  )
+  ))))
 
 let run () = print_newline ();
   print_endline "Day 24";
   let lines = read_file "./inputs/day24.real.txt" in
   let exploded = List.map explode lines in
-  (* print_newline (); *)
-  (* printlist (fun x -> printlist print_string x; print_newline ()) exploded; *)
   let width = List.length @@ List.hd exploded in
   let height = List.length exploded in
   let points = create_and_connect_points exploded width in
@@ -169,8 +164,6 @@ let run () = print_newline ();
   | Block | Space -> failwith "Bad start position"
   | Point exp -> (
     let s1 = Sys.time () in
-    (* let consts = (height, width, all_blizzards, blizzard_cycle, points, s1) in *)
-    (* let (minutes, path, _) = do_walk consts (List.tl all_blizzards) 0 max_int ThrupleMap.empty exp false in *)
     let consts = (height, width, all_blizzards, points) in
     let (path_opt, _) = march consts (List.tl all_blizzards) 0 max_int ThrupleMap.empty exp in
     match path_opt with
