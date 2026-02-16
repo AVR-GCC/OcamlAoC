@@ -408,6 +408,24 @@ let get_neighbor point orientation =
   | None -> (point, orientation)
   | Some p -> p
 
+let get_walking_orientation (tx, ty) (cx, cy) =
+  if cx > tx then Some West else (
+  if cx < tx then Some East else (
+  if cy > ty then Some North else (
+  if cy < ty then Some South else (
+    None
+  ))))
+  (* if cx = tx && cy = ty then None else ( *)
+
+
+let rec find_point current_point target_coordinates =
+  let { position = current_coordinates; _ } = current_point in
+  match get_walking_orientation target_coordinates current_coordinates with
+  | None -> current_point
+  | Some orientation ->
+      let (next_point, _) = get_neighbor current_point orientation in
+      find_point next_point target_coordinates
+
 let rec transpose mat = function
   | 0 -> []
   | i ->

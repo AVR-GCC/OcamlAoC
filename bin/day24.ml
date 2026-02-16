@@ -1,10 +1,15 @@
 open Myutils
 
+module ThrupleMap = Map.Make(struct
+  type t = int * int * int
+  let compare = compare
+end)
+
 (* Print *)
 let rec print_field_row blizzard_map (ex, ey) = function
   | [] -> ()
   | Point { position = (x, y); _ } :: t -> (
-      if x = ex && y = ey then print_string "E" else (
+      if x = ex && y = ey then (print_string @@ if TupleMap.mem (x, y) blizzard_map then "X" else "E") else (
         match TupleMap.find_opt (x, y) blizzard_map with
         | None -> print_string "."
         | Some ls -> (
@@ -25,6 +30,15 @@ let rec print_field_row blizzard_map (ex, ey) = function
   | _ :: t -> print_string "#"; print_field_row blizzard_map (ex, ey) t
 
 let print_field blizzard_map expedition points = ignore @@ List.map (fun row -> print_field_row blizzard_map expedition row; print_newline ()) points
+
+let rec print_path consts blizzards path =
+  let (points, all_blizzards) = consts in
+  let (b, bl) = match blizzards with
+  | bliz :: rest -> (bliz, rest)
+  | [] -> (List.hd all_blizzards, List.tl all_blizzards) in
+  match path with
+  | p :: pa -> print_field b p points; print_newline (); print_path consts bl pa
+  | [] -> ()
 
 (* Connect *)
 let connect_opposite_walls mat tra =
@@ -84,6 +98,10 @@ let move_blizzards map =
   let nlst = move_blizzards_rec lst in
   map_blizzards nlst
 
+let rec get_all_blizzard_positions blizzards = function
+  | 0 -> []
+  | x -> blizzards :: (get_all_blizzard_positions (move_blizzards blizzards) (x - 1))
+
 (* Expidition *)
 let moves = [Some East; Some South; Some West; Some North; None]
 
@@ -101,38 +119,38 @@ let move_possible bliz point = function
       | West -> if cx < nx then None else Some np
       | East -> if cx > nx then None else Some np
 
-let rec do_walk bliz height width points countdown exp =
-  let { position = (x, y); _ } = exp in
-  (* print_tuple print_int (height - 1, y); *)
-  (* print_newline (); *)
-  (* print_tuple print_int (x, y); *)
-  (* print_string " -> "; *)
-  (* print_newline (); *)
-  (* print_field bliz (x, y) points; *)
-  if countdown < width - x + height - y - 2 then (max_int, []) else
-  (* if countdown = 0 then (print_endline "coundown finished"; (max_int, [(x, y)])) else *)
-  let next_countdown = countdown - 1 in
-  if y = height - 1 then (0, [(x, y)]) else
-  (* if y = height - 1 then (print_endline "SUCCESS!"; (0, [(x, y)])) else *)
-  let coming_bliz = move_blizzards bliz in
-  let move_options = List.map (move_possible coming_bliz exp) moves in
-  let next_points = List.filter_map Fun.id move_options in
-  if List.length next_points = 0 then (max_int, []) else (
-  (* if List.length next_points = 0 then (print_endline "route dead"; (max_int, [(x, y)])) else ( *)
-  (* printlist print_point_pos next_points; *)
-  (* print_newline (); *)
-  let (minutes, path) = List.fold_left (fun (shortest, path) point -> 
-    let (this_time, this_path) = do_walk coming_bliz height width points shortest point in
-    if this_time < shortest then (this_time, this_path) else (shortest, path)
-  ) (next_countdown, []) next_points in
-  let r_path = (x, y) :: path in
-  let r_mins = minutes + 1 in
-  (* printlist (print_tuple print_int) r_path; *)
-  (* print_string " ->>> "; *)
-  (* print_int r_mins; *)
-  (* print_newline (); *)
-  (* print_newline (); *)
-  (r_mins, r_path))
+let rec march consts blizzards step limit mem point =
+  let (height, width, all_blizzards, _points) = consts in
+  let { position = (x, y); _ } = point in
+  if limit < (width - 2 - x) + (height - 1 - y) then (None, mem) else ( (* Longer than path already found *)
+  if height - 1 = y then (Some [(x, y)], mem) else ( (* Reached end *)
+  let map_key = (x, y, step mod (List.length all_blizzards)) in
+  match ThrupleMap.find_opt map_key mem with
+  | Some path-> (path, mem) (* Found memoized position *)
+  | None -> (
+  let (cur_blizzard, rem_blizzards) = match blizzards with
+  | cur_blizzard :: rem_blizzards -> (cur_blizzard, rem_blizzards)
+  | [] -> (List.hd all_blizzards, List.tl all_blizzards) in
+  let possible_points_opts = List.map (move_possible cur_blizzard point) moves in
+  let possible_points = List.filter_map (fun x -> x) possible_points_opts in
+  if List.length possible_points = 0 then (None, mem) else ( (* Dead end *)
+  let (path_opt, memo) = List.fold_left (fun (path_opt, memoi) next_point ->
+    match path_opt with
+    | None -> march consts rem_blizzards (step + 1) (limit - 1) memoi next_point
+    | Some path ->
+        match march consts rem_blizzards (step + 1) (List.length path - 1) memoi next_point with
+        | (None, memoiz) -> (Some path, memoiz)
+        | res -> res
+  ) (None, mem) possible_points in
+  let final_path = match path_opt with
+  | None -> None
+  | Some path -> Some ((x, y) :: path) in
+  let memoi = ThrupleMap.add map_key final_path memo in
+  (final_path, memoi)
+  )
+  )
+  )
+  )
 
 let run () = print_newline ();
   print_endline "Day 24";
@@ -143,16 +161,28 @@ let run () = print_newline ();
   let width = List.length @@ List.hd exploded in
   let height = List.length exploded in
   let points = create_and_connect_points exploded width in
-  let blizzards = collect_blizzards points in
+  let blizzard_cycle = lcm (width - 2) (height - 2) in
+  let base_blizzards = collect_blizzards points in
+  let all_blizzards = get_all_blizzard_positions base_blizzards blizzard_cycle in
   let exp_opt = List.hd @@ List.tl @@ List.hd points in
   match exp_opt with
   | Block | Space -> failwith "Bad start position"
   | Point exp -> (
     let s1 = Sys.time () in
-    let (minutes, _) = do_walk blizzards height width points max_int exp in
+    (* let consts = (height, width, all_blizzards, blizzard_cycle, points, s1) in *)
+    (* let (minutes, path, _) = do_walk consts (List.tl all_blizzards) 0 max_int ThrupleMap.empty exp false in *)
+    let consts = (height, width, all_blizzards, points) in
+    let (path_opt, _) = march consts (List.tl all_blizzards) 0 max_int ThrupleMap.empty exp in
+    match path_opt with
+    | None -> print_endline "No path found"
+    | Some path ->
     let s2 = Sys.time () in
     print_endline ("time:" ^ string_of_float (s2 -. s1));
-    print_int minutes;
+    print_int @@ List.length path - 1;
+    print_newline ();
+    printlist (print_tuple print_int) path;
+    print_newline ();
+    print_path (points, all_blizzards) all_blizzards path;
   );
   print_newline ();
   print_newline ();;
