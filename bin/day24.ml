@@ -119,11 +119,11 @@ let move_possible bliz point = function
       | West -> if cx < nx then None else Some np
       | East -> if cx > nx then None else Some np
 
-let rec march consts blizzards step limit mem point =
+let rec march consts blizzards step limit mem point end_height =
   let (height, width, all_blizzards, _points) = consts in
   let { position = (x, y); _ } = point in
   if limit < (width - 2 - x) + (height - 1 - y) then (None, mem) else ( (* Longer than path already found *)
-  if height - 1 = y then (Some [(x, y)], mem) else ( (* Reached end *)
+  if end_height = y then (Some [(x, y)], mem) else ( (* Reached end *)
   let map_key = (x, y, step mod (List.length all_blizzards)) in
   match ThrupleMap.find_opt map_key mem with
   | Some path-> (path, mem) (* Found memoized position *)
@@ -136,9 +136,9 @@ let rec march consts blizzards step limit mem point =
   if List.length possible_points = 0 then (None, mem) else ( (* Dead end *)
   let (path_opt, memo) = List.fold_left (fun (path_opt, memoi) next_point ->
     match path_opt with
-    | None -> march consts rem_blizzards (step + 1) (limit - 1) memoi next_point
+    | None -> march consts rem_blizzards (step + 1) (limit - 1) memoi next_point end_height
     | Some path ->
-        match march consts rem_blizzards (step + 1) (List.length path - 1) memoi next_point with
+        match march consts rem_blizzards (step + 1) (List.length path - 1) memoi next_point end_height with
         | (None, memoiz) -> (Some path, memoiz)
         | (Some opto, memoiz)-> if List.length opto < List.length path then (Some opto, memoiz) else (Some path, memoiz)
   ) (None, mem) possible_points in
@@ -165,7 +165,7 @@ let run () = print_newline ();
   | Point exp -> (
     let s1 = Sys.time () in
     let consts = (height, width, all_blizzards, points) in
-    let (path_opt, _) = march consts (List.tl all_blizzards) 0 max_int ThrupleMap.empty exp in
+    let (path_opt, _) = march consts (List.tl all_blizzards) 0 max_int ThrupleMap.empty exp (height - 1) in
     match path_opt with
     | None -> print_endline "No path found"
     | Some path ->
