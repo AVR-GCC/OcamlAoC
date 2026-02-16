@@ -31,13 +31,13 @@ let rec print_field_row blizzard_map (ex, ey) = function
 
 let print_field blizzard_map expedition points = ignore @@ List.map (fun row -> print_field_row blizzard_map expedition row; print_newline ()) points
 
-let rec print_path consts blizzards path =
+let rec print_path consts blizzards path step =
   let (points, all_blizzards) = consts in
   let (b, bl) = match blizzards with
   | bliz :: rest -> (bliz, rest)
   | [] -> (List.hd all_blizzards, List.tl all_blizzards) in
   match path with
-  | p :: pa -> print_field b p points; print_newline (); print_path consts bl pa
+  | p :: pa -> print_int step; print_newline (); print_field b p points; print_newline (); print_path consts bl pa @@ step + 1
   | [] -> ()
 
 (* Connect *)
@@ -140,7 +140,7 @@ let rec march consts blizzards step limit mem point =
     | Some path ->
         match march consts rem_blizzards (step + 1) (List.length path - 1) memoi next_point with
         | (None, memoiz) -> (Some path, memoiz)
-        | res -> res
+        | (Some opto, memoiz)-> if List.length opto < List.length path then (Some opto, memoiz) else (Some path, memoiz)
   ) (None, mem) possible_points in
   let final_path = match path_opt with
   | None -> None
@@ -172,10 +172,6 @@ let run () = print_newline ();
     let s2 = Sys.time () in
     print_endline ("time:" ^ string_of_float (s2 -. s1));
     print_int @@ List.length path - 1;
-    print_newline ();
-    printlist (print_tuple print_int) path;
-    print_newline ();
-    print_path (points, all_blizzards) all_blizzards path;
   );
   print_newline ();
   print_newline ();;
